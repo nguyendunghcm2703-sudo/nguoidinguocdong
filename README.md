@@ -23,7 +23,19 @@ Sau mỗi lần sửa nội dung hoặc giao diện, đổi số trong `sw.js` (
 
 ## Thêm điều chiêm nghiệm
 
-Trong `js/content.js`, thêm một đối tượng `{ title: '...', paras: ['...', '...'] }` vào `reflections.sections`. Sách tự thêm một trang cho mỗi mục, hiện sau truyện cuối và trước trang kết. Câu kết (`closing`) và các ý chính (`spirit`) tự hiện ở trang chiêm nghiệm cuối cùng; nhớ sửa chữ "bốn điều" trong câu kết nếu số mục thay đổi.
+Các điều chiêm nghiệm nằm ở file riêng `js/chiem-nghiem.js`. Thêm một đối tượng `{ id: 'ten-ngan', title: '...', paras: ['...', '...'] }` vào `sections`; sách tự thêm một trang cho mỗi mục. `id` ngắn, không dấu, giúp mục Ghi tâm của người đọc không bị lệch khi bạn chèn thêm hoặc đổi thứ tự. `closing` (câu kết) và `spirit` (các ý chính) hiện ở cuối danh sách. Chiêm nghiệm là một khu riêng, mở từ mục lục hoặc trang cuối, không nằm trong dòng lật trang của 20 truyện.
+
+## Ghi tâm
+
+Nút “Ghi tâm” (biểu tượng trái tim ở đầu trang) là nơi người đọc giữ lại các truyện, điều chiêm nghiệm đã chạm vào mình và tự viết điều của riêng mình. Dữ liệu lưu trên thiết bị (`localStorage`, khóa `tkk-tam`), có nút “Sao chép tất cả”. Dữ liệu “hũ” của bản cũ được tự chuyển sang.
+
+## Cài đặt và cập nhật
+
+Mục lục có phần Cài đặt để bật, tắt hiệu ứng cây bút (mặc định theo thiết bị). Service worker lấy bản mới từ mạng trước, nên đưa bản mới lên host là thấy ở lần mở kế tiếp; máy đang mở sách sẽ hiện thanh “Có bản mới của sách”. Vẫn nên đổi `VERSION` trong `sw.js` sau mỗi lần sửa.
+
+## Giọng đọc
+
+Nút “Đọc to” dùng giọng có sẵn trên thiết bị. Chrome trên máy tính thường không có giọng tiếng Việt (Edge thì có); khi đó sách hiện hướng dẫn cài giọng hoặc dùng Edge.
 
 ## Làm lại icon
 

@@ -317,3 +317,35 @@ body.reading .hero-kick { opacity: 0; visibility: hidden; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* Ghi tâm, Chiêm nghiệm, cài đặt, thông báo bản mới */
+.dual { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .8rem; }
+.dcard { display: grid; gap: .25rem; text-align: left; padding: 1rem 1.1rem; border-radius: 10px; background: none; border: 1px solid var(--ln); color: var(--fg); }
+.dcard:hover { border-color: var(--ac); }
+.dcard b { font: 600 .72rem/1.3 var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--ac); }
+.dcard em { font: 500 1.1rem/1.35 var(--f-disp); font-style: normal; }
+.dcard small { color: var(--mut); font-size: .85rem; }
+.settings { display: grid; gap: .6rem; padding-top: .5rem; border-top: 1px solid var(--ln); }
+.set-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; }
+.set-row .chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.pen-btn { margin-top: .6rem; }
+.voice-hint { margin: 0; padding: .8rem 1rem; border-radius: 10px; background: color-mix(in oklch, var(--ac) 10%, var(--paper)); font-size: .9rem; line-height: 1.6; }
+.tam-form { display: grid; gap: .6rem; }
+.tam-form textarea {
+  width: 100%; min-height: 6.5rem; resize: vertical; padding: .8rem 1rem; border-radius: 10px;
+  border: 1px solid var(--ln); background: var(--paper); color: var(--fg); font: 400 1.05rem/1.6 var(--f-read);
+}
+.tam-form textarea:focus { outline: 2px solid var(--ac); outline-offset: 1px; }
+.entries, .saved-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .7rem; }
+.entry { padding: .9rem 1rem; border-radius: 10px; border: 1px solid var(--ln); }
+.entry p { margin: 0 0 .5rem; font: 400 1.05rem/1.7 var(--f-read); overflow-wrap: anywhere; }
+.entry-foot { display: flex; justify-content: space-between; align-items: center; gap: .6rem; color: var(--mut); font-size: .8rem; }
+.mini { background: none; border: 1px solid var(--ln); color: var(--mut); border-radius: 999px; padding: .25rem .7rem; font-size: .8rem; }
+.mini:hover { border-color: var(--ac); color: var(--fg); }
+.saved-list li { display: flex; justify-content: space-between; align-items: center; gap: .6rem; }
+.saved-list .lnk small { display: block; color: var(--mut); font: 400 .78rem/1.3 var(--f-ui); text-decoration: none; }
+.upd {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem;
+  padding: .8rem max(16px, env(safe-area-inset-right, 0px)) calc(.8rem + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: var(--paper); color: var(--fg); border-top: 1px solid var(--ac); box-shadow: 0 -6px 24px rgba(0,0,0,.18);
+}

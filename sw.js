@@ -1,9 +1,11 @@
 /* Service worker: lưu sách để đọc khi không có mạng.
-   Khi sửa nội dung hoặc giao diện, đổi số phiên bản VERSION bên dưới để máy người đọc tải bản mới. */
-var VERSION = 'tkk-v4';
+   Trang, mã nguồn và nội dung lấy bản mới từ mạng trước (tối đa 4 giây), chỉ khi không có mạng
+   mới dùng bản đã lưu. Nhờ vậy đưa bản mới lên host là thấy ngay ở lần mở kế tiếp.
+   Mỗi lần sửa, nên đổi VERSION để máy người đọc dọn bộ nhớ cũ. */
+var VERSION = 'tkk-v5';
 var FONTS = 'tkk-fonts-v1';
 var SHELL = [
-  './', 'index.html', 'css/style.css', 'js/content.js', 'js/app.js',
+  './', 'index.html', 'css/style.css', 'js/content.js', 'js/chiem-nghiem.js', 'js/app.js',
   'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'
 ];
 
@@ -19,13 +21,36 @@ self.addEventListener('activate', function (e) {
   );
 });
 
-function staleWhileRevalidate(req, cacheName, fallbackKey) {
+function networkFirst(req) {
+  var fromCache = caches.match(req).then(function (hit) {
+    return hit || (req.mode === 'navigate' ? caches.match('index.html') : undefined);
+  });
+  return new Promise(function (resolve) {
+    var settled = false;
+    var timer = setTimeout(function () {
+      fromCache.then(function (hit) { if (hit && !settled) { settled = true; resolve(hit); } });
+    }, 4000);
+    fetch(req, { cache: 'no-cache' }).then(function (res) {
+      clearTimeout(timer);
+      if (res && res.ok) {
+        var copy = res.clone();
+        caches.open(VERSION).then(function (c) { c.put(req, copy); });
+      }
+      if (!settled) { settled = true; resolve(res); }
+    }).catch(function () {
+      clearTimeout(timer);
+      fromCache.then(function (hit) { if (!settled) { settled = true; resolve(hit || Response.error()); } });
+    });
+  });
+}
+
+function staleWhileRevalidate(req, cacheName) {
   return caches.open(cacheName).then(function (cache) {
     return cache.match(req).then(function (hit) {
       var net = fetch(req).then(function (res) {
         if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
         return res;
-      }).catch(function () { return hit || (fallbackKey ? cache.match(fallbackKey) : undefined); });
+      }).catch(function () { return hit; });
       return hit || net;
     });
   });
@@ -36,8 +61,8 @@ self.addEventListener('fetch', function (e) {
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
   if (url.origin === self.location.origin) {
-    e.respondWith(staleWhileRevalidate(req, VERSION, req.mode === 'navigate' ? 'index.html' : null));
+    e.respondWith(networkFirst(req));
   } else if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    e.respondWith(staleWhileRevalidate(req, FONTS, null));
+    e.respondWith(staleWhileRevalidate(req, FONTS));
   }
 });
