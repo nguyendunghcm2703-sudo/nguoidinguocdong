@@ -1,0 +1,17 @@
+{
+  "name": "Từng Khoảnh Khắc",
+  "short_name": "Khoảnh Khắc",
+  "description": "Sách điện tử gồm 20 câu chuyện nhỏ và những phương ngôn tiếp thêm sức, đọc theo một ngày từ bình minh đến đêm.",
+  "lang": "vi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1b1730",
+  "theme_color": "#1b1730",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

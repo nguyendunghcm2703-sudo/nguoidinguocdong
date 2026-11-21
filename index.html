@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Từng Khoảnh Khắc</title>
+<meta name="description" content="Sách điện tử gồm 20 câu chuyện nhỏ và những phương ngôn tiếp thêm sức, đọc theo một ngày từ bình minh đến đêm.">
+<meta name="theme-color" content="#1b1730">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Khoảnh Khắc">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Literata:opsz,wght@7..72,400;7..72,500&family=Dancing+Script:wght@500;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="hero" id="hero">
+  <svg class="scene" id="scene" viewBox="0 0 800 380" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Một người bước ngược dòng người đang đi về phía ngược lại, hướng về mặt trời đang lên">
+    <defs>
+      <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#ffd9a0" stop-opacity=".95"/>
+        <stop offset=".45" stop-color="#ff9f5a" stop-opacity=".45"/>
+        <stop offset="1" stop-color="#ff7a45" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="gndG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#000" stop-opacity=".0"/>
+        <stop offset="1" stop-color="#000" stop-opacity=".45"/>
+      </linearGradient>
+      <g id="fig">
+        <circle cx="2" cy="-58" r="7"/>
+        <path d="M-8 -49 Q2 -55 11 -49 L9 -22 L-7 -22 Z" stroke-width="0"/>
+        <path d="M-4 -22 L-6 0 M6 -22 L9 0" fill="none" stroke-width="4.5" stroke-linecap="round"/>
+      </g>
+    </defs>
+
+    <circle class="sun" cx="196" cy="326" r="240" fill="url(#sunG)"/>
+    <circle cx="196" cy="326" r="50" fill="#ffe9c4"/>
+    <rect x="0" y="340" width="800" height="40" fill="url(#gndG)"/>
+    <path d="M0 340H800" stroke="#fff" stroke-opacity=".14" stroke-width="1.5"/>
+
+    <g class="wind" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round">
+      <path d="M120 250h70" /><path d="M560 224h110"/><path d="M300 282h54"/><path d="M640 292h80"/>
+    </g>
+
+    <g class="layer far"><g class="run" id="crowdFar"></g></g>
+    <g class="layer near"><g class="run" id="crowdNear"></g></g>
+
+    <g transform="translate(420 348) scale(1.3)">
+      <ellipse cx="-2" cy="1" rx="34" ry="4.5" fill="#000" opacity=".4"/>
+      <g class="bob">
+        <path class="leg legB" d="M0 -46 L0 -2" />
+        <path class="arm armB" d="M-9 -82 L-9 -50" />
+        <path class="torso" d="M0 -46 L-9 -84" />
+        <path class="scarf s1" d="M-10 -88 C6 -94 20 -84 44 -92" />
+        <path class="scarf s2" d="M-10 -84 C4 -84 14 -78 30 -80" />
+        <circle class="head" cx="-14" cy="-98" r="9.5" />
+        <path class="leg legA" d="M0 -46 L0 -2" />
+        <path class="arm armA" d="M-9 -82 L-9 -50" />
+      </g>
+    </g>
+  </svg>
+
+  <div class="hero-bar">
+    <div class="brand">Từng Khoảnh Khắc</div>
+    <div class="tools">
+      <button class="ib" data-act="toc" aria-label="Mục lục"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+      <button class="ib" id="rainB" data-act="rain" aria-pressed="false" aria-label="Tiếng mưa"><svg class="ic" viewBox="0 0 24 24"><path d="M7 15h10a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 7.8 7.6 3.7 3.7 0 0 0 7 15z"/><path d="M9 18v2.5M13 18v2.5M17 18v2.5"/></svg></button>
+      <button class="ib" data-act="theme" aria-label="Đổi giao diện sáng hoặc tối"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+    </div>
+  </div>
+  <p class="hero-kick">Đi ngược dòng,<br>từng bước một</p>
+</header>
+
+<div class="app">
+  <ol class="strip" id="strip" aria-label="Các phần trong một ngày"></ol>
+  <main class="stage" id="stage"></main>
+  <nav class="nav" aria-label="Chuyển trang">
+    <button class="nbtn" id="prev" data-act="prev"><svg class="ic" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>Trước</button>
+    <span class="pos" id="pos"></span>
+    <button class="nbtn" id="next" data-act="next">Sau<svg class="ic" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+  </nav>
+</div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-label="Thẻ phương ngôn">
+  <div class="sheet-in">
+    <img id="shImg" alt="Thẻ phương ngôn để lưu hoặc chia sẻ">
+    <div class="btns">
+      <button class="btn" data-act="shShare">Chia sẻ</button>
+      <button class="btn ghost" data-act="shSave">Tải ảnh</button>
+      <button class="btn ghost" data-act="shClose">Đóng</button>
+    </div>
+    <p class="sheet-hint">Trên điện thoại, bạn cũng có thể nhấn giữ vào ảnh để lưu.</p>
+  </div>
+</div>
+<p class="note" id="note" role="status" aria-live="polite"></p>
+
+<script src="js/content.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
