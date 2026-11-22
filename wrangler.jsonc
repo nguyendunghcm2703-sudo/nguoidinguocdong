@@ -1,0 +1,14 @@
+{
+  // Tên phải trùng với tên Worker của project trên Cloudflare.
+  "name": "tung-khoanh-khac",
+  "main": "worker.js",
+  "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  // Dán ID của KV namespace (Cloudflare, Storage & Databases, KV, cột ID) vào chỗ DAN-ID-KV-VAO-DAY.
+  "kv_namespaces": [{ "binding": "STORE", "id": "522d42d2d8e84c8a81ea0b0c8df408cb" }],
+  "observability": { "enabled": true }
+}

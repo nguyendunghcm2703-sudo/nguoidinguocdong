@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="vi" data-skin="co">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Quản trị · Từng Khoảnh Khắc</title>
+<script>try{var s=localStorage.getItem("tkk-skin");if(s==="den"||s==="hien")document.documentElement.setAttribute("data-skin",s)}catch(e){}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="adm">
+<header class="adm-head">
+  <span class="brand">Từng Khoảnh Khắc · Quản trị</span>
+  <span class="adm-right"><a class="adm-link" href="./">Về sách</a><button class="mini" id="logout" hidden>Đăng xuất</button></span>
+</header>
+
+<main class="adm-main">
+  <section id="login" class="page" hidden>
+    <p class="kick">Dành cho admin</p>
+    <h1 class="h-story">Đăng nhập</h1>
+    <form id="loginForm" class="tam-form">
+      <label class="h2" for="pw">Mật khẩu</label>
+      <input id="pw" type="password" autocomplete="current-password" class="adm-in" required>
+      <div class="btns"><button class="btn" type="submit">Vào trang quản trị</button></div>
+      <p class="voice-hint" id="loginMsg" role="status" hidden></p>
+    </form>
+  </section>
+
+  <section id="panel" hidden>
+    <div class="pills" role="tablist" aria-label="Quản trị">
+      <button class="pill" role="tab" data-tab="rec" aria-selected="true">Thu âm</button>
+      <button class="pill" role="tab" data-tab="cn" aria-selected="false">Chiêm nghiệm chung</button>
+    </div>
+
+    <div id="tabRec" class="page">
+      <p class="kick">Thu âm</p>
+      <h1 class="h-story">Giọng đọc cho từng bài</h1>
+      <p class="lead">Bài nào đã thu thì người đọc nghe giọng của bạn. Bài chưa thu vẫn dùng giọng máy.</p>
+      <div id="recList"></div>
+    </div>
+
+    <div id="tabCn" class="page" hidden>
+      <p class="kick">Chiêm nghiệm chung</p>
+      <h1 class="h-story">Điều chiêm nghiệm cho mọi người</h1>
+      <form id="cnForm" class="tam-form">
+        <label class="h2" for="cnTitle">Tiêu đề</label>
+        <input id="cnTitle" class="adm-in" maxlength="200" required>
+        <label class="h2" for="cnText">Nội dung (cách nhau một dòng trống là sang đoạn mới)</label>
+        <textarea id="cnText" rows="7" required></textarea>
+        <div class="btns"><button class="btn" type="submit" id="cnSave">Thêm điều này</button><button class="btn ghost" type="button" id="cnCancel" hidden>Hủy sửa</button></div>
+      </form>
+      <h2 class="h2">Đã thêm từ trang này</h2>
+      <div id="cnList"></div>
+      <h2 class="h2">Có sẵn trong sách</h2>
+      <div id="cnBase"></div>
+      <p class="src">Các điều có sẵn nằm trong file public/js/chiem-nghiem.js, sửa ở đó. Các điều thêm ở đây lưu trên Cloudflare KV và hiện cho người đọc ở lần mở sách kế tiếp (tối đa khoảng một phút).</p>
+    </div>
+  </section>
+
+  <p class="voice-hint" id="fatal" role="alert" hidden></p>
+</main>
+
+<div class="adm-rec" id="rec" hidden role="dialog" aria-modal="true" aria-labelledby="recTitle">
+  <div class="adm-rec-in">
+    <h2 id="recTitle" class="h-story adm-rec-h"></h2>
+    <div class="adm-script" id="recScript" tabindex="0"></div>
+    <div class="adm-meter" aria-hidden="true"><i id="recLevel"></i></div>
+    <p class="adm-time" id="recTime" role="status">0:00</p>
+    <audio id="recPlayer" controls hidden></audio>
+    <p class="voice-hint" id="recMsg" role="status" hidden></p>
+    <div class="btns">
+      <button class="btn" id="recStart">Bắt đầu thu</button>
+      <button class="btn" id="recStop" hidden>Dừng</button>
+      <button class="btn" id="recSave" hidden>Lưu bài này</button>
+      <button class="btn ghost" id="recAgain" hidden>Thu lại</button>
+      <button class="btn ghost" id="recClose">Đóng</button>
+    </div>
+  </div>
+</div>
+<p class="note" id="note" role="status" aria-live="polite"></p>
+
+<script src="js/content.js"></script>
+<script src="js/chiem-nghiem.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

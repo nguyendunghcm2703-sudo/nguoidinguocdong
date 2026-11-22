@@ -1,0 +1,17 @@
+{
+  "name": "tung-khoanh-khac",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "build": "node build.mjs",
+    "build:plain": "node build.mjs --plain",
+    "dev": "npm run build:plain && wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.1",
+    "wrangler": "^4.0.0"
+  }
+}
