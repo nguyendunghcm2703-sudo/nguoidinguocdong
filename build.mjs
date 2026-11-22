@@ -12,7 +12,7 @@ const noObf = plain || args.has('--no-obfuscate');
 const SRC = 'public';
 const OUT = 'dist';
 
-if (!plain && fs.readFileSync('wrangler.jsonc', 'utf8').includes('DAN-ID-KV-VAO-DAY')) {
+if (!plain && /"id"\s*:\s*"DAN-ID-KV-VAO-DAY"/.test(fs.readFileSync('wrangler.jsonc', 'utf8'))) {
   console.error('Chưa điền ID của KV namespace vào wrangler.jsonc (chỗ DAN-ID-KV-VAO-DAY). Xem README.');
   process.exit(1);
 }
