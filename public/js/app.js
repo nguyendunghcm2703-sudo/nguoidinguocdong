@@ -17,6 +17,7 @@
   var ICO = {
     heart: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
     speak: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M16.5 9a4 4 0 0 1 0 6"/></svg>',
+    rain:  '<svg class="ic" viewBox="0 0 24 24"><path d="M7 15h10a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 7.8 7.6 3.7 3.7 0 0 0 7 15z"/><path d="M9 18v2.5M13 18v2.5M17 18v2.5"/></svg>',
     card:  '<svg class="ic" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
     play:  '<svg class="ic i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
     pause: '<svg class="ic i-pause" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
@@ -30,10 +31,13 @@
   var prevB = document.getElementById('prev');
   var nextB = document.getElementById('next');
   var noteEl = document.getElementById('note');
-  var SKINS = ['co', 'den', 'hien'];
-  var SKIN_NAME = { co: 'Cổ', den: 'Đêm đèn dầu', hien: 'Hiện đại' };
-  var SKIN_BAR = { co: '#d9c08c', den: '#2c1d0f', hien: '#1b1730' };
+  var ac, gain, rainOn = false, rainVol = parseInt(get('tkk-rain') || '50', 10);
+  if (!(rainVol >= 0 && rainVol <= 100)) rainVol = 50;
+  var SKINS = ['co', 'den', 'sang', 'toi'];
+  var SKIN_NAME = { co: 'Cổ', den: 'Đèn dầu', sang: 'Sáng', toi: 'Tối' };
+  var SKIN_BAR = { co: '#d9c08c', den: '#2c1d0f', sang: '#f4f2f8', toi: '#1b1730' };
   var skin = get('tkk-skin');
+  if (skin === 'hien') skin = 'sang';
   if (SKINS.indexOf(skin) < 0) skin = 'co';
   var i = 0, curStory = null, navPrev = null, navNext = null;
   var timers = [], deferred = null;
@@ -266,11 +270,15 @@
     return ios ? 'Trên iPhone: bấm nút Chia sẻ của Safari, chọn "Thêm vào MH chính" để cài sách.' : '';
   }
 
+  function rainRow() {
+    return '<div class="rain"><button class="rbtn" data-act="rain" aria-pressed="' + rainOn + '" aria-label="Bật hoặc tắt tiếng mưa">' + ICO.rain + '<span>Mưa</span></button>' +
+      '<input class="rvol" type="range" min="0" max="100" step="5" value="' + rainVol + '" aria-label="Âm lượng tiếng mưa"></div>';
+  }
   function listenBar(id) {
     return '<div class="listen" data-id="' + id + '" role="group" aria-label="Nghe bài">' +
       '<button class="lbtn" data-act="listen" aria-label="Nghe hoặc dừng bài này">' + ICO.play + ICO.pause + '</button>' +
       '<div class="lmid"><div class="lt">Nghe bài này</div><div class="lbar"><i></i></div>' +
-      '<div class="lmeta"><span class="lsrc"></span><span class="ltime"></span></div></div></div>' +
+      '<div class="lmeta"><span class="lsrc"></span><span class="ltime"></span></div></div>' + rainRow() + '</div>' +
       '<p class="voice-hint" role="status" hidden></p>';
   }
 
@@ -285,6 +293,7 @@
       (resume ? '<button class="btn ghost" data-act="resume">Đọc tiếp trang ' + (last + 1) + '</button>' : '') +
       '<button class="btn ghost" data-act="bookListen">' + ICO.speak + '<span data-bl>Nghe cả sách</span></button>' +
       '<button class="btn ghost" data-act="install" ' + (deferred ? '' : 'hidden') + '>Cài lên màn hình</button></div>' +
+      '<div class="listen coverrain" role="group" aria-label="Tiếng mưa">' + rainRow() + '</div>' +
       '<div class="cover-foot"><p class="foot">' + S.length + ' truyện · đọc được khi không có mạng' + (installHint() ? ' · ' + installHint() : '') + '</p>' +
       '<div class="seal" aria-hidden="true"><span>Từng</span><span>Khoảnh</span><span>Khắc</span></div></div>' +
       '</article>';
@@ -295,9 +304,6 @@
     return '<section class="settings"><h2 class="h2">Cài đặt</h2>' +
       '<div class="set-row"><span>Hiệu ứng cây bút</span><div class="chips" role="group" aria-label="Hiệu ứng cây bút">' +
       o.map(function (x) { return '<button class="chip" data-act="penpref" data-v="' + x[0] + '" aria-pressed="' + (penPref === x[0]) + '">' + x[1] + '</button>'; }).join('') +
-      '</div></div>' +
-      '<div class="set-row"><span>Giao diện</span><div class="chips" role="group" aria-label="Giao diện">' +
-      SKINS.map(function (k) { return '<button class="chip" data-act="skin" data-v="' + k + '" aria-pressed="' + (skin === k) + '">' + SKIN_NAME[k] + '</button>'; }).join('') +
       '</div></div>' +
       '<p class="src">Nếu bạn không thấy chữ được viết ra, hãy chọn “Bật”. Máy của bạn có thể đang tắt hiệu ứng chuyển động.</p></section>';
   }
@@ -385,6 +391,7 @@
     if (!o.keep && stage.firstElementChild) stage.firstElementChild.classList.add('turn-' + (o.dir || 'next'));
     setupPen(o.penKey, !!o.penAlways);
     drawStrip(o.cur);
+    stripEl.hidden = o.menu === 'refl';
     posEl.textContent = o.pos;
     navPrev = o.prev || null; navNext = o.next || null;
     prevB.style.visibility = navPrev ? 'visible' : 'hidden';
@@ -551,7 +558,7 @@
     el.textContent = msg || VOICE_MSG; el.hidden = false;
   }
   function syncListen() {
-    [].forEach.call(stage.querySelectorAll('.listen'), function (el) {
+    [].forEach.call(stage.querySelectorAll('.listen[data-id]'), function (el) {
       var id = el.getAttribute('data-id'), me = play.id === id, on = me && play.playing, pct = 0, t = '';
       if (me) {
         if (play.tts) pct = play.prog * 100;
@@ -665,8 +672,12 @@
     else { play.book = false; go(LAST, 'next'); keepPlay = false; play.playing = false; syncListen(); }
   }
 
-  var ac, gain, rainOn = false;
-  function toggleRain() {
+  function rainSync() {
+    [].forEach.call(document.querySelectorAll('.rbtn'), function (b) { b.setAttribute('aria-pressed', String(rainOn)); });
+    [].forEach.call(document.querySelectorAll('.rvol'), function (r) { r.value = rainVol; });
+  }
+  function rainGain() { return rainOn ? rainVol / 100 * 0.18 : 0; }
+  function toggleRain(forceOn) {
     try {
       if (!ac) {
         ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -680,15 +691,28 @@
         src.start();
       }
       if (ac.state === 'suspended') ac.resume();
-      rainOn = !rainOn;
-      gain.gain.setTargetAtTime(rainOn ? 0.09 : 0, ac.currentTime, 0.4);
-      document.getElementById('rainB').setAttribute('aria-pressed', String(rainOn));
-      note(rainOn ? 'Tiếng mưa: bật' : 'Tiếng mưa: tắt');
+      rainOn = forceOn === true ? true : !rainOn;
+      gain.gain.setTargetAtTime(rainGain(), ac.currentTime, 0.3);
+      rainSync();
     } catch (e) { note('Thiết bị này chưa phát được âm thanh'); }
   }
+  document.addEventListener('input', function (e) {
+    if (!e.target.classList || !e.target.classList.contains('rvol')) return;
+    rainVol = +e.target.value; put('tkk-rain', String(rainVol));
+    if (rainVol > 0 && !rainOn) toggleRain(true);
+    else if (gain) gain.gain.setTargetAtTime(rainGain(), ac.currentTime, 0.1);
+    rainSync();
+  });
 
+  function closeSkin() {
+    var pp = document.getElementById('skinpop'), sb = document.getElementById('skinB');
+    if (pp) pp.hidden = true; if (sb) sb.setAttribute('aria-expanded', 'false');
+  }
   function applySkin() {
     root.setAttribute('data-skin', skin);
+    if (skin === 'sang' || skin === 'toi') root.setAttribute('data-theme', skin === 'toi' ? 'dark' : 'light'); else root.removeAttribute('data-theme');
+    var pop = document.getElementById('skinpop');
+    if (pop) pop.innerHTML = SKINS.map(function (k) { return '<button class="sk" data-act="skin" data-v="' + k + '" aria-pressed="' + (skin === k) + '">' + SKIN_NAME[k] + '</button>'; }).join('');
     var m = document.querySelector('meta[name="theme-color"]');
     if (m) m.setAttribute('content', SKIN_BAR[skin]);
   }
@@ -781,6 +805,7 @@
   var view = 'book';
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-act]');
+    if (!e.target.closest('#skinpop') && !(b && b.getAttribute('data-act') === 'skinMenu')) closeSkin();
     if (!b) return;
     var a = b.getAttribute('data-act');
     if (a === 'open') go(1);
@@ -816,7 +841,8 @@
     else if (a === 'save') toggleSave(b);
     else if (a === 'listen') toggleListen(b.closest('.listen'));
     else if (a === 'bookListen') bookListen();
-    else if (a === 'skin') { skin = b.getAttribute('data-v'); put('tkk-skin', skin); applySkin(); [].forEach.call(document.querySelectorAll('[data-act="skin"]'), function (x) { x.setAttribute('aria-pressed', String(x === b)); }); note('Giao diện: ' + SKIN_NAME[skin]); }
+    else if (a === 'skin') { skin = b.getAttribute('data-v'); put('tkk-skin', skin); applySkin(); closeSkin(); note('Giao diện: ' + SKIN_NAME[skin]); }
+    else if (a === 'skinMenu') { var pp = document.getElementById('skinpop'); pp.hidden = !pp.hidden; b.setAttribute('aria-expanded', String(!pp.hidden)); }
     else if (a === 'rewrite') rewrite();
     else if (a === 'penpref') {
       penPref = b.getAttribute('data-v'); put('tkk-pen', penPref);
@@ -828,7 +854,6 @@
     else if (a === 'shSave') saveCard();
     else if (a === 'shClose') document.getElementById('sheet').hidden = true;
     else if (a === 'rain') toggleRain();
-    else if (a === 'theme') { skin = SKINS[(SKINS.indexOf(skin) + 1) % SKINS.length]; put('tkk-skin', skin); applySkin(); note('Giao diện: ' + SKIN_NAME[skin]); }
     else if (a === 'reload') location.reload();
     else if (a === 'install' && deferred) {
       deferred.prompt();

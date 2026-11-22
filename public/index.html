@@ -6,7 +6,7 @@
 <title>Từng Khoảnh Khắc</title>
 <meta name="description" content="Sách điện tử gồm 20 câu chuyện nhỏ và những phương ngôn tiếp thêm sức, đọc theo một ngày từ bình minh đến đêm.">
 <meta name="theme-color" content="#d9c08c">
-<script>try{var s=localStorage.getItem("tkk-skin");if(s==="den"||s==="hien")document.documentElement.setAttribute("data-skin",s)}catch(e){}</script>
+<script>try{var s=localStorage.getItem("tkk-skin");if(s==="hien")s="sang";if(s==="den"||s==="sang"||s==="toi"){var d=document.documentElement;d.setAttribute("data-skin",s);if(s!=="den")d.setAttribute("data-theme",s==="toi"?"dark":"light")}}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -70,12 +70,13 @@
     <div class="brand">Từng Khoảnh Khắc</div>
     <div class="tools">
       <button class="ib" data-act="toc" aria-label="Mục lục"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
-      <button class="ib" id="rainB" data-act="rain" aria-pressed="false" aria-label="Tiếng mưa"><svg class="ic" viewBox="0 0 24 24"><path d="M7 15h10a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 7.8 7.6 3.7 3.7 0 0 0 7 15z"/><path d="M9 18v2.5M13 18v2.5M17 18v2.5"/></svg></button>
-      <button class="ib" data-act="theme" aria-label="Đổi giao diện sáng hoặc tối"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+      <button class="ib" id="skinB" data-act="skinMenu" aria-haspopup="true" aria-expanded="false" aria-label="Chọn giao diện"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
     </div>
   </div>
   <p class="hero-kick">Đi ngược dòng,<br>từng bước một</p>
 </header>
+
+<div class="skinpop" id="skinpop" hidden role="group" aria-label="Giao diện"></div>
 
 <nav class="menu" id="menu" aria-label="Menu chính">
   <button class="mtab" data-act="menuRead" id="mRead">Đọc sách</button>
