@@ -5,7 +5,7 @@
 
 :root {
   --ink: #efe6ff; --mist: oklch(.46 .12 calc(var(--h) + 45)); --sunc: #ffd9a0;
-  --robe: #51657a; --hat: #c6a463; --skin: #e8cca4; --scarf: #8fa6b8; --scarf2: #d5e0e8; --ol: #1d140a;
+  --robe: #8a7a60; --hat: #c6a463; --skin: #dcc2a0; --scarf: #a39577; --scarf2: #d8cba8; --ol: #1d140a; --patch: #a89570; --dust: #b9a47c;
   --h: 265;
   --bg-l: .965; --bg-c: .022;
   --paper-l: .992; --paper-c: .01;
@@ -398,7 +398,7 @@ html[data-skin="sang"] .seal, html[data-skin="toi"] .seal { display: none; }
 
 /* ---------- giao diện Cổ (mặc định) và Đêm đèn dầu ---------- */
 :root[data-skin="co"] {
-  --ink: #3a2814; --mist: #e8d6a8; --sunc: #d9a35a; --robe: #4d6070; --hat: #b9a06a; --skin: #dcc2a0; --scarf: #6a8091; --scarf2: #c4d0d6; --ol: #3a2a18;
+  --ink: #3a2814; --mist: #e8d6a8; --sunc: #d9a35a; --robe: #6b5d48; --hat: #a58d5c; --skin: #c9a77f; --scarf: #8a7d62; --scarf2: #cdbf9a; --ol: #3a2a18; --patch: #85704f; --dust: #a8946a;
   --bg: #e4d2a8; --paper: #ecdcb8; --fg: #3a2814; --mut: #6b5532; --ac: #8a5a1f; --seal: #9a4a35; --ln: #b99b63; --on-ac: #f6ead0;
   --walker: #2c1d0c; --crowd: #4a3a22; color-scheme: light;
 }
