@@ -4,6 +4,8 @@
 @property --h { syntax: '<number>'; inherits: true; initial-value: 265; }
 
 :root {
+  --ink: #efe6ff; --mist: oklch(.46 .12 calc(var(--h) + 45)); --sunc: #ffd9a0;
+  --robe: #51657a; --hat: #c6a463; --skin: #e8cca4; --scarf: #8fa6b8; --scarf2: #d5e0e8; --ol: #1d140a;
   --h: 265;
   --bg-l: .965; --bg-c: .022;
   --paper-l: .992; --paper-c: .01;
@@ -79,10 +81,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
   color: #fff;
   transition: height .75s cubic-bezier(.3,.7,.2,1);
 }
-body.reading .hero { height: 112px; }
+body.reading .hero { height: 128px; }
+body.reading .scene { width: min(100%, 420px); }
 .scene {
   position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: min(100%, 980px); height: 100%; display: block;
+  width: min(100%, 640px); height: 100%; display: block;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
 }
@@ -90,7 +93,7 @@ body.reading .hero { height: 112px; }
 .layer.near { fill: var(--crowd); stroke: var(--crowd); opacity: .5; }
 .run { animation: drift 90s linear infinite; }
 .layer.near .run { animation-duration: 44s; }
-@keyframes drift { to { transform: translateX(1600px); } }
+@keyframes drift { to { transform: translateX(780px); } }
 .wind path { opacity: .18; animation: wind 5s ease-in-out infinite; }
 .wind path:nth-child(2) { animation-delay: 1.3s; }
 .wind path:nth-child(3) { animation-delay: 2.6s; }
@@ -310,7 +313,7 @@ body.reading .hero-kick { opacity: 0; visibility: hidden; }
 .pen-pending { visibility: hidden; }
 .w { display: inline-block; white-space: pre; }
 .nib {
-  position: absolute; left: 0; top: 0; width: 20px; height: 20px; z-index: 6; transform-origin: 2px 18px;
+  position: absolute; left: 0; top: 0; width: 58px; height: 58px; z-index: 6; transform-origin: 3.8px 54px;
   pointer-events: none; opacity: 0; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3));
 }
 
@@ -395,10 +398,12 @@ html[data-skin="sang"] .seal, html[data-skin="toi"] .seal { display: none; }
 
 /* ---------- giao diện Cổ (mặc định) và Đêm đèn dầu ---------- */
 :root[data-skin="co"] {
+  --ink: #3a2814; --mist: #e8d6a8; --sunc: #d9a35a; --robe: #4d6070; --hat: #b9a06a; --skin: #dcc2a0; --scarf: #6a8091; --scarf2: #c4d0d6; --ol: #3a2a18;
   --bg: #e4d2a8; --paper: #ecdcb8; --fg: #3a2814; --mut: #6b5532; --ac: #8a5a1f; --seal: #9a4a35; --ln: #b99b63; --on-ac: #f6ead0;
   --walker: #2c1d0c; --crowd: #4a3a22; color-scheme: light;
 }
 :root[data-skin="den"] {
+  --ink: #e8c98a; --mist: #3a2815; --sunc: #ffd58a;
   --bg: #1b120a; --paper: #2a1c10; --fg: #ecdcb8; --mut: #bda37a; --ac: #e8a24f; --ln: #4d3a22; --on-ac: #1b120a;
   --walker: #ffd58a; --crowd: #8a6f48; color-scheme: dark;
 }
@@ -426,17 +431,9 @@ html[data-skin="sang"] .seal, html[data-skin="toi"] .seal { display: none; }
 :root[data-skin="den"] .hero { background: linear-gradient(180deg, #120b05 0%, #2c1d0f 70%, #4a3016 100%); border-bottom: 2px solid #5c4424; }
 :root[data-skin="co"] .brand, :root[data-skin="co"] .ib { color: #3a2814; }
 :root[data-skin="co"] .ib:hover { background: rgba(58, 40, 20, .1); }
-:root[data-skin="co"] 
 :root[data-skin="co"] .hero-kick { color: #3a2814; text-shadow: none; }
 :root[data-skin="co"] .brand, :root[data-skin="den"] .brand { font-size: .95rem; letter-spacing: .2em; }
 :root[data-skin="den"] .brand, :root[data-skin="den"] .ib, :root[data-skin="den"] .hero-kick { color: #f0dfb8; }
-:root[data-skin="co"] .disc { fill: #d9a35a; opacity: .75; }
-:root[data-skin="den"] .disc { fill: #ffd58a; }
-:root[data-skin="co"] .gnd { opacity: .2; }
-:root[data-skin="co"] .wind { stroke: #3a2814; }
-:root[data-skin="co"] .leg { stroke: #3a2814; }
-:root[data-skin="co"] .scarf { stroke: #8a4a3a; }
-:root[data-skin="den"] .scarf { stroke: #e0603a; }
 :root[data-skin="co"] .layer.far { opacity: .22; }
 :root[data-skin="co"] .layer.near { opacity: .4; }
 :root[data-skin="co"] .page, :root[data-skin="den"] .page {
@@ -500,3 +497,26 @@ html[data-skin="sang"] .seal, html[data-skin="toi"] .seal { display: none; }
 .sk { min-height: 40px; padding: 0 .9rem; text-align: left; border: 0; border-radius: 8px; background: none; color: var(--fg); font: 500 1rem/1 var(--f-ui); }
 .sk:hover { background: color-mix(in oklch, var(--ac) 12%, transparent); }
 .sk[aria-pressed="true"] { background: var(--ac); color: var(--on-ac); font-weight: 600; }
+
+
+/* ---------- banner thủy mặc: nền tĩnh và người chibi ---------- */
+#sceneBg { pointer-events: none; }
+.sunhalo { fill: var(--sunc); opacity: .45; }
+.sundisc { fill: var(--sunc); opacity: .62; }
+.mtn path { fill: var(--ink); }
+.pine { fill: var(--ink); stroke: var(--ink); }
+.birds, .gdash { stroke: var(--ink); }
+.m0 { stop-color: var(--mist); stop-opacity: 0; }
+.m1 { stop-color: var(--mist); stop-opacity: .95; }
+.cbob { animation: cbob .9s ease-in-out infinite; }
+.cleg { transform-box: fill-box; transform-origin: 50% 0%; }
+.cl1 { animation: cswA .9s ease-in-out infinite alternate; }
+.cl2 { animation: cswB .9s ease-in-out infinite alternate; }
+.ctail { transform-box: fill-box; transform-origin: 0% 50%; animation: cflap 1.3s ease-in-out infinite alternate; }
+.clamp { animation: glow 4s ease-in-out infinite; }
+@keyframes cbob { 0%, 50%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-1.1px); } }
+@keyframes cswA { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
+@keyframes cswB { from { transform: rotate(18deg); } to { transform: rotate(-18deg); } }
+@keyframes cflap { from { transform: rotate(-5deg); } to { transform: rotate(7deg); } }
+
+.nib svg { width: 100%; height: 100%; display: block; }

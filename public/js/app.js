@@ -121,17 +121,17 @@
   /* ---------- header: dòng người và người đi ngược dòng ---------- */
   function rnd(seed) { return function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
   function crowd(n, y, s, seed) {
-    var r = rnd(seed), W = 1600, step = W / n, out = '';
+    var r = rnd(seed), W = 780, step = W / n, out = '';
     for (var k = 0; k < n; k++) {
       var x = k * step + (r() - .5) * step * .55, sc = s * (.9 + r() * .24);
       out += '<use href="#fig" transform="translate(' + x.toFixed(1) + ' ' + y + ') scale(' + sc.toFixed(2) + ')"/>';
     }
-    return '<g>' + out + '</g><g transform="translate(-1600 0)">' + out + '</g>';
+    return '<g>' + out + '</g><g transform="translate(-780 0)">' + out + '</g>';
   }
   function buildScene() {
     var far = document.getElementById('crowdFar'), near = document.getElementById('crowdNear');
-    if (far) far.innerHTML = crowd(24, 336, .62, 7);
-    if (near) near.innerHTML = crowd(13, 352, 1, 3);
+    if (far) far.innerHTML = crowd(12, 197, .5, 7);
+    if (near) near.innerHTML = crowd(7, 200, .78, 3);
   }
 
   /* ---------- chữ hiện ra như cây bút đang viết ---------- */
@@ -180,7 +180,7 @@
     });
     var total = t;
     nib.className = 'nib'; nib.setAttribute('aria-hidden', 'true');
-    nib.innerHTML = '<svg viewBox="0 0 20 20" width="20" height="20"><path d="M1.5 18.5L4.2 10.2 14 1.6 18.4 6 9.8 15.8z" fill="var(--paper)" stroke="var(--ac)" stroke-width="1.5" stroke-linejoin="round"/><path d="M4.2 10.2l5.6 5.6" stroke="var(--ac)" stroke-width="1.5"/><circle cx="1.8" cy="18.2" r="1.3" fill="var(--ac)"/></svg>';
+    nib.innerHTML = '<svg viewBox="0 0 46 46" width="46" height="46" overflow="visible"><g stroke-linejoin="round" stroke-linecap="round"><path d="M15 31 L12.4 25 L13.6 25.2 L13 19.6 L14.4 20 L15.6 14.8 L16.8 15.4 L20.4 10.6 L20.8 11.8 L22.6 14.2 L24 9 L25 9.8 L29 6.2 L29.3 7.4 L34 4.4 L34 5.6 L38.6 3 L44 2 C38 8.5 30 16.5 22 24 C19 27 17 29.2 15 31Z" fill="#f6eedb" stroke="#6b5230" stroke-width=".9"/><path d="M18 29.5 L20.6 33.2 L21 32.2 L25 34.6 L25 33.4 L30 33 L29.6 31.8 L34 28.6 L33.4 27.6 L37.6 22.4 L36.8 21.6 L40.4 14.6 L39.5 14 L43 6.4 L44 2 C38 10 28 20 18 29.5Z" fill="#e9dcbd" stroke="#6b5230" stroke-width=".9"/><path d="M20 27 L14.5 23 M23.4 23.4 L17 17.6 M26.8 19.6 L21.6 12.6 M30 16.2 L26.2 9 M33.4 12.6 L31 6.4 M22 28 L24.6 32.6 M26 24.4 L31.5 29.5 M29.6 20.6 L35 25 M33 16.6 L38 19.6 M37 12 L40.6 12.6" stroke="#b39a6c" stroke-width=".6" fill="none"/><path d="M4 42 C12 34 24 20 44 2" stroke="#5a4326" stroke-width="1.6" fill="none"/><path d="M2.2 44.4 L5 40.4 L7.2 42.6Z" fill="#2c1d0c" stroke="none"/></g></svg>';
     stage.appendChild(nib);
     var MASK = 'linear-gradient(103deg, #000 0, #000 58%, transparent 100%)';
     anims = [];
@@ -222,7 +222,7 @@
       if (cur) {
         var rc = cur.sp.getBoundingClientRect(), sg = stage.getBoundingClientRect(), p = (e - cur.start) / cur.dur;
         var wob = Math.sin(e / 55) * rc.height * .07 + Math.sin(e / 23) * 1.2;
-        nib.style.transform = 'translate(' + (rc.left - sg.left + rc.width * p - 2) + 'px,' + (rc.top - sg.top + rc.height * .74 + wob - 18) + 'px) rotate(' + (Math.sin(e / 90) * 3) + 'deg)';
+        nib.style.transform = 'translate(' + (rc.left - sg.left + rc.width * p - 3.8) + 'px,' + (rc.top - sg.top + rc.height * .74 + wob - 54) + 'px) rotate(' + (Math.sin(e / 90) * 3 + Math.sin(e / 210) * 2 - 4) + 'deg)';
         nib.style.opacity = '1';
       } else nib.style.opacity = '0';
       raf = requestAnimationFrame(frame);
@@ -444,7 +444,7 @@
       '<section class="tam-form"><label class="h2" for="tamText">Hôm nay bạn nghiệm ra điều gì?</label>' +
       '<textarea id="tamText" rows="4" maxlength="800" placeholder="Một câu thôi cũng được…"></textarea>' +
       '<div class="btns"><button class="btn" data-act="tamAdd">Ghi lại</button></div></section>' +
-      (own ? '<ul class="entries">' + own + '</ul>' : '<p class="empty">Chưa có điều nào. Điều bạn viết sẽ nằm ở đây.</p>') +
+      (own ? '<ul class="entries">' + own + '</ul>' : '<p class="empty">Chưa có điều nào. Hãy viết điều bạn nghĩ ở khung phía trên.</p>') +
       (tam.own.length ? '<div class="btns"><button class="btn ghost" data-act="tamCopy">Sao chép tất cả</button></div>' : '') +
       '<p class="src">Những điều bạn tự viết chỉ lưu trên thiết bị này. Xóa dữ liệu trình duyệt hoặc đổi máy thì sẽ mất, nên hãy sao chép một bản để giữ.</p>';
   }
@@ -456,7 +456,7 @@
       '<h1 class="h-story">Những điều chiêm nghiệm về cuộc đời</h1>' +
       '<div class="pills" role="tablist" aria-label="Loại chiêm nghiệm">' +
       '<button class="pill" role="tab" data-act="reflTab" data-tab="common" aria-selected="' + (reflTab === 'common') + '">Chung</button>' +
-      '<button class="pill" role="tab" data-act="reflTab" data-tab="own" aria-selected="' + (reflTab === 'own') + '">Của bạn · ' + tam.own.length + '</button></div>' +
+      '<button class="pill" role="tab" data-act="reflTab" data-tab="own" aria-selected="' + (reflTab === 'own') + '">Của bạn</button></div>' +
       (reflTab === 'common' ? commonHtml() : ownHtml()) +
       '</article>';
     mount(html, {

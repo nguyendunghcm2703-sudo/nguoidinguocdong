@@ -21,49 +21,57 @@
 <body>
 
 <header class="hero" id="hero">
-  <svg class="scene" id="scene" viewBox="0 0 800 380" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Một người bước ngược dòng người đang đi về phía ngược lại, hướng về mặt trời đang lên">
+  <svg class="scene" id="sceneBg" viewBox="0 0 390 212" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
     <defs>
-      <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
-        <stop offset="0" stop-color="#ffd9a0" stop-opacity=".95"/>
-        <stop offset=".45" stop-color="#ff9f5a" stop-opacity=".45"/>
-        <stop offset="1" stop-color="#ff7a45" stop-opacity="0"/>
-      </radialGradient>
-      <linearGradient id="gndG" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#000" stop-opacity=".0"/>
-        <stop offset="1" stop-color="#000" stop-opacity=".45"/>
-      </linearGradient>
-      <g id="fig">
-        <circle cx="2" cy="-58" r="7"/>
-        <path d="M-8 -49 Q2 -55 11 -49 L9 -22 L-7 -22 Z" stroke-width="0"/>
-        <path d="M-4 -22 L-6 0 M6 -22 L9 0" fill="none" stroke-width="4.5" stroke-linecap="round"/>
-      </g>
+      <filter id="fBlur"><feGaussianBlur stdDeviation="6"/></filter>
+      <filter id="fBlur2"><feGaussianBlur stdDeviation="1.4"/></filter>
+      <filter id="fInk" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".035 .06" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="7"/><feGaussianBlur stdDeviation=".6"/></filter>
+      <filter id="fGrain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .23  0 0 0 0 .16  0 0 0 0 .08  0 0 0 .5 0"/></filter>
+      <linearGradient id="gMist" x1="0" y1="0" x2="0" y2="1"><stop class="m0" offset="0"/><stop class="m1" offset="1"/></linearGradient>
     </defs>
-
-    <circle class="sun" cx="196" cy="326" r="240" fill="url(#sunG)"/>
-    <circle class="disc" cx="196" cy="326" r="50" fill="#ffe9c4"/>
-    <rect class="gnd" x="0" y="340" width="800" height="40" fill="url(#gndG)"/>
-    <path d="M0 340H800" stroke="#fff" stroke-opacity=".14" stroke-width="1.5"/>
-
-    <g class="wind" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round">
-      <path d="M120 250h70" /><path d="M560 224h110"/><path d="M300 282h54"/><path d="M640 292h80"/>
+    <circle class="sunhalo" cx="96" cy="88" r="48" filter="url(#fBlur)"/>
+    <circle class="sundisc" cx="96" cy="88" r="29"/>
+    <g class="mtn" filter="url(#fInk)">
+      <path d="M0 132 C34 96 62 112 100 86 C140 58 170 100 212 76 C256 50 292 98 332 72 C358 58 378 74 390 66 L390 212 L0 212Z" opacity=".11"/>
+      <path d="M0 160 C36 126 80 146 128 120 C176 96 204 136 250 112 C296 90 336 128 390 102 L390 212 L0 212Z" opacity=".19"/>
+      <path d="M0 186 C70 176 140 192 220 182 C290 174 340 188 390 180 L390 212 L0 212Z" opacity=".32"/>
     </g>
-
+    <ellipse cx="130" cy="146" rx="150" ry="14" fill="url(#gMist)" filter="url(#fBlur)"/>
+    <ellipse cx="310" cy="168" rx="120" ry="12" fill="url(#gMist)" filter="url(#fBlur)"/>
+    <g class="pine" filter="url(#fInk)" stroke-linecap="round" opacity=".62">
+      <path d="M352 192 C350 150 356 120 362 92" stroke-width="3.2" fill="none"/>
+      <path d="M362 100 C340 96 330 104 322 112 C340 108 350 108 362 112Z M360 124 C376 118 388 122 392 130 C380 128 370 128 360 134Z M358 148 C338 144 330 152 326 160 C342 156 350 156 358 162Z" stroke="none"/>
+    </g>
+    <g class="birds" fill="none" stroke-linecap="round" opacity=".5"><path d="M214 52 q6 -6 12 0 q6 -6 12 0"/><path d="M246 40 q5 -5 10 0 q5 -5 10 0"/><path d="M172 62 q4 -4 8 0 q4 -4 8 0"/></g>
+    <path class="gdash" d="M0 198 C80 193 150 202 230 196" stroke-width="2.2" stroke-opacity=".45" stroke-dasharray="14 7 3 9" fill="none" stroke-linecap="round"/>
+    <rect width="390" height="212" filter="url(#fGrain)" opacity=".16"/>
+  </svg>
+  <svg class="scene" id="scene" viewBox="0 0 390 212" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Một người nhỏ đội nón lá, xách đèn lồng, bước ngược dòng người đang đi về phía ngược lại, hướng về mặt trời đang lên">
+    <defs>
+      <radialGradient id="gLamp"><stop offset="0" stop-color="#ffd27a" stop-opacity=".95"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient>
+      <g id="fig" stroke-linecap="round"><circle cx="0" cy="-30" r="4.4" stroke="none"/><path d="M0 -24 L0 -6" stroke-width="5.2"/><path d="M0 -6 L-6 12 M0 -6 L7 12" stroke-width="3.6" fill="none"/></g>
+    </defs>
     <g class="layer far"><g class="run" id="crowdFar"></g></g>
     <g class="layer near"><g class="run" id="crowdNear"></g></g>
-
-    <g transform="translate(420 348) scale(1.3)">
-      <ellipse cx="-2" cy="1" rx="34" ry="4.5" fill="#000" opacity=".4"/>
-      <g class="bob">
-        <path class="leg legB" d="M0 -46 L0 -2" />
-        <path class="arm armB" d="M-9 -82 L-9 -50" />
-        <path class="torso" d="M0 -46 L-9 -84" />
-        <path class="scarf s1" d="M-10 -88 C6 -94 20 -84 44 -92" />
-        <path class="scarf s2" d="M-10 -84 C4 -84 14 -78 30 -80" />
-        <circle class="head" cx="-14" cy="-98" r="9.5" />
-        <path class="leg legA" d="M0 -46 L0 -2" />
-        <path class="arm armA" d="M-9 -82 L-9 -50" />
+    <ellipse cx="241" cy="196.5" rx="19" ry="2.6" fill="#3a2814" opacity=".18" filter="url(#fBlur2)"/>
+    <g transform="translate(240 196) scale(.96)" stroke-linecap="round" stroke-linejoin="round">
+      <circle class="clamp" cx="-21" cy="-12" r="20" fill="url(#gLamp)" opacity=".8"/>
+      <g class="cbob">
+        <path class="cleg cl1" d="M-5 -9 L-6 0" stroke="var(--ol)" stroke-width="4.2" fill="none" opacity=".85"/>
+        <path class="cleg cl2" d="M5 -9 L7 0" stroke="var(--ol)" stroke-width="4.2" fill="none" opacity=".85"/>
+        <path d="M-10 -28 Q-14 -11 -9 -8 L9 -8 Q14 -11 10 -28 Z" fill="var(--robe)" stroke="var(--ol)" stroke-width=".7" stroke-opacity=".7"/>
+        <path d="M-7 -24 L-20 -19" stroke="var(--ol)" stroke-width="3.2" fill="none" opacity=".85"/>
+        <rect x="-25" y="-16" width="9.4" height="9.4" rx="2.2" fill="#f2cf86" stroke="var(--ol)" stroke-width=".7" stroke-opacity=".7"/>
+        <g class="ctail"><path d="M9 -27 C18 -32 25 -23 35 -29 C40 -31 44 -28 46 -25" stroke="var(--scarf)" stroke-width="4.2" fill="none" opacity=".9"/>
+        <path d="M14 -28 C21 -30 26 -24 35 -28" stroke="var(--scarf2)" stroke-width="1.2" fill="none" stroke-dasharray="3 3" opacity=".8"/></g>
+        <circle cx="0" cy="-40" r="15.5" fill="var(--skin)" stroke="var(--ol)" stroke-width=".7" stroke-opacity=".7"/>
+        <path d="M-12 -28 Q0 -22 12 -28" stroke="var(--scarf)" stroke-width="5" fill="none" opacity=".9"/>
+        <circle cx="-7" cy="-36" r="1.3" fill="var(--ol)" stroke="none"/>
+        <path d="M-28 -46 L0 -75 L28 -46 Q0 -40 -28 -46Z" fill="var(--hat)" stroke="var(--ol)" stroke-width=".8" stroke-opacity=".7"/>
+        <path d="M-14 -50 L0 -68 M0 -48 L0 -68 M14 -50 L0 -68" stroke="#7a6238" stroke-width=".6" fill="none" opacity=".55"/>
       </g>
     </g>
+    <ellipse cx="246" cy="198" rx="70" ry="7" fill="url(#gMist)" filter="url(#fBlur)" opacity=".85"/>
   </svg>
 
   <div class="hero-bar">
