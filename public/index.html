@@ -118,10 +118,11 @@
 <p class="note" id="note" role="status" aria-live="polite"></p>
 
 <script>
-/* báo lỗi lên màn hình khi trang không chạy được (để biết lỗi gì trên iPhone) */
-(function(){var shown=0;function show(m){if(shown++>2)return;try{var d=document.createElement("div");d.setAttribute("role","alert");d.style.cssText="position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#3a1810;color:#fff;font:12px/1.4 monospace;padding:10px 12px;border-radius:8px;word-break:break-word;white-space:pre-wrap";d.textContent="Lỗi: "+m;document.body.appendChild(d)}catch(e){}}
-window.addEventListener("error",function(e){show((e.message||"?")+" ("+String(e.filename||"").split("/").pop()+":"+(e.lineno||0)+":"+(e.colno||0)+")")});
-setTimeout(function(){var st=document.getElementById("stage");if(st&&!st.children.length)show("trang chưa dựng được và không có lỗi nào được báo (trình duyệt: "+navigator.userAgent.slice(0,90)+")")},3500);
+/* báo lỗi lên màn hình khi trang không chạy được */
+(function(){var shown=0;function show(m){if(shown++>3)return;try{var d=document.createElement("div");d.setAttribute("role","alert");d.style.cssText="position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#3a1810;color:#fff;font:12px/1.4 monospace;padding:10px 12px;border-radius:8px;word-break:break-word;white-space:pre-wrap;max-height:60vh;overflow:auto";d.textContent="Lỗi: "+m;document.body.appendChild(d)}catch(e){}}
+window.addEventListener("error",function(e){var t=e.target;if(t&&t!==window&&(t.src||t.href)){if(/fonts\.(googleapis|gstatic)/.test(t.src||t.href))return;show("không tải được "+(t.src||t.href));return}show((e.message||"?")+" ("+String(e.filename||"").split("/").pop()+":"+(e.lineno||0)+":"+(e.colno||0)+")")},true);
+setTimeout(function(){var st=document.getElementById("stage");if(st&&!st.children.length){var r=[];try{performance.getEntriesByType("resource").forEach(function(x){if(/\.(js|css)(\?|$)/.test(x.name))r.push(x.name.split("/").pop()+"="+(x.responseStatus||"?")+"/"+x.transferSize)})}catch(e){}
+show("trang chưa dựng được. BOOK="+typeof window.BOOK+" CHIEM_NGHIEM="+typeof window.CHIEM_NGHIEM+" SW="+(navigator.serviceWorker&&navigator.serviceWorker.controller?"co":"khong")+" | "+r.join(" ")+" | "+navigator.userAgent.slice(0,70))}},3500);
 window.addEventListener("unhandledrejection",function(e){show("promise: "+(e.reason&&e.reason.message||e.reason))})})();
 </script>
 <script src="js/content.js"></script>
