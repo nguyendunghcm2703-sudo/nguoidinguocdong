@@ -117,6 +117,13 @@
 <div class="upd" id="upd" hidden role="status"><span>Có bản mới của sách.</span><button class="btn" data-act="reload">Bấm để tải lại</button></div>
 <p class="note" id="note" role="status" aria-live="polite"></p>
 
+<script>
+/* báo lỗi lên màn hình khi trang không chạy được (để biết lỗi gì trên iPhone) */
+(function(){var shown=0;function show(m){if(shown++>2)return;try{var d=document.createElement("div");d.setAttribute("role","alert");d.style.cssText="position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#3a1810;color:#fff;font:12px/1.4 monospace;padding:10px 12px;border-radius:8px;word-break:break-word;white-space:pre-wrap";d.textContent="Lỗi: "+m;document.body.appendChild(d)}catch(e){}}
+window.addEventListener("error",function(e){show((e.message||"?")+" ("+String(e.filename||"").split("/").pop()+":"+(e.lineno||0)+":"+(e.colno||0)+")")});
+setTimeout(function(){var st=document.getElementById("stage");if(st&&!st.children.length)show("trang chưa dựng được và không có lỗi nào được báo (trình duyệt: "+navigator.userAgent.slice(0,90)+")")},3500);
+window.addEventListener("unhandledrejection",function(e){show("promise: "+(e.reason&&e.reason.message||e.reason))})})();
+</script>
 <script src="js/content.js"></script>
 <script src="js/chiem-nghiem.js"></script>
 <script src="js/app.js"></script>
