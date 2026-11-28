@@ -1,8 +1,10 @@
-/* Trang quản trị: thu âm cho từng bài và thêm chiêm nghiệm chung.
+/* Trang quản trị: thu âm cho từng bài, thêm và sửa truyện, thêm chiêm nghiệm chung.
    Mọi thao tác ghi đều đi qua /api và chỉ chạy khi đã đăng nhập bằng mật khẩu (secret ADMIN_PASSWORD trên Cloudflare). */
 (function () {
   'use strict';
-  var S = window.BOOK.stories;
+  var BASE_S = window.BOOK.stories, S = BASE_S.slice(), ORDER = window.BOOK.order, PN = {};
+  ORDER.forEach(function (k) { PN[k] = window.BOOK.parts[k].name; });
+  var stRemote = false, stEditing = null;
   var BASE = (window.CHIEM_NGHIEM && window.CHIEM_NGHIEM.sections) || [];
   var $ = function (id) { return document.getElementById(id); };
   var AUD = {}, remote = [], editing = null;
@@ -222,11 +224,101 @@
     saveRemote().then(function () { renderCn(); renderRec(); }).catch(function () { remote = before; renderCn(); note('Không lưu được.'); });
   });
 
+  /* ---------- truyện ---------- */
+  function stSort() {
+    S = S.map(function (s, k) { return { s: s, k: k }; }).sort(function (a, b) {
+      return ORDER.indexOf(a.s.part) - ORDER.indexOf(b.s.part) || a.k - b.k;
+    }).map(function (o) { return o.s; });
+  }
+  function renderSt() {
+    $('stState').textContent = stRemote
+      ? 'Danh sách dưới đây lưu trên máy chủ và là bản người đọc đang thấy.'
+      : 'Chưa sửa lần nào: đang hiện bản có sẵn trong sách. Lần lưu đầu tiên sẽ chuyển cả danh sách lên máy chủ, từ đó sửa ở đây.';
+    var last = '', html = '';
+    S.forEach(function (s, k) {
+      if (s.part !== last) { html += '<h2 class="h2" style="margin-top:1rem">' + esc(PN[s.part]) + '</h2>'; last = s.part; }
+      var same = (S[k - 1] && S[k - 1].part === s.part), sameN = (S[k + 1] && S[k + 1].part === s.part);
+      html += '<div class="adm-cn"><b>' + esc(s.title) + (s.kind === 'real' ? ' · có thật' : '') + '</b><p>' + esc(s.paras[0]).slice(0, 120) + '…</p>' +
+        '<span class="ops"><button class="mini" data-a="sedit" data-k="' + k + '">Sửa</button>' +
+        (same ? '<button class="mini" data-a="sup" data-k="' + k + '">Lên</button>' : '') +
+        (sameN ? '<button class="mini" data-a="sdown" data-k="' + k + '">Xuống</button>' : '') +
+        '<button class="mini" data-a="sdel" data-k="' + k + '">Xóa</button></span></div>';
+    });
+    $('stList').innerHTML = html;
+  }
+  function saveStories() {
+    stSort();
+    return api('stories', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ stories: S }) })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); stRemote = true; });
+  }
+  function nextStoryId() {
+    var n = 0; S.forEach(function (s) { var m = /^s(\d+)$/.exec(s.id); if (m) n = Math.max(n, +m[1]); });
+    return 's' + (n + 1 < 10 ? '0' : '') + (n + 1);
+  }
+  function resetSt() {
+    stEditing = null; $('stForm').reset(); $('stSrc').hidden = true;
+    $('stSave').textContent = 'Thêm truyện này'; $('stCancel').hidden = true;
+  }
+  $('stKind').addEventListener('change', function () { $('stSrc').hidden = !$('stKind').value; });
+  $('stForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var title = $('stTitle').value.trim(), prov = $('stProv').value.trim();
+    var paras = $('stText').value.split(/\n\s*\n/).map(function (p) { return p.replace(/\s*\n\s*/g, ' ').trim(); }).filter(Boolean);
+    if (!title || !paras.length || !prov) { note('Cần có tiêu đề, nội dung và phương ngôn'); return; }
+    var o = { id: stEditing !== null ? S[stEditing].id : nextStoryId(), part: $('stPart').value, title: title };
+    var kind = $('stKind').value;
+    if (kind) {
+      var url = $('stSrcUrl').value.trim(), name = $('stSrcName').value.trim();
+      if (!/^https?:\/\/\S+$/i.test(url) || !name) { note('Truyện lấy từ báo cần tên nguồn và đường dẫn bắt đầu bằng https://'); return; }
+      o.kind = kind;
+    }
+    o.paras = paras; o.proverb = { text: prov };
+    if ($('stBy').value.trim()) o.proverb.by = $('stBy').value.trim();
+    o.task = $('stTask').value.trim();
+    if (kind) { o.source = { name: name, url: url }; if ($('stSrcIdea').value.trim()) o.source.idea = $('stSrcIdea').value.trim(); }
+    var before = S.slice(), was = stRemote;
+    if (stEditing !== null) S[stEditing] = o; else S.push(o);
+    saveStories().then(function () { renderSt(); renderRec(); resetSt(); note('Đã lưu'); })
+      .catch(function () { S = before; stRemote = was; note('Không lưu được. Kiểm tra đăng nhập và mạng.'); });
+  });
+  $('stCancel').addEventListener('click', resetSt);
+  $('stList').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-a]'); if (!b) return;
+    var k = parseInt(b.getAttribute('data-k'), 10), a = b.getAttribute('data-a'), before = S.slice(), was = stRemote, gone = null;
+    if (a === 'sedit') {
+      var s = S[k]; stEditing = k;
+      $('stPart').value = s.part; $('stTitle').value = s.title; $('stText').value = s.paras.join('\n\n');
+      $('stProv').value = s.proverb.text; $('stBy').value = s.proverb.by || ''; $('stTask').value = s.task || '';
+      $('stKind').value = s.kind || ''; $('stSrc').hidden = !s.kind;
+      $('stSrcName').value = s.source ? s.source.name : ''; $('stSrcUrl').value = s.source ? s.source.url : ''; $('stSrcIdea').value = s.source && s.source.idea || '';
+      $('stSave').textContent = 'Lưu thay đổi'; $('stCancel').hidden = false; $('stForm').scrollIntoView({ behavior: 'smooth' }); $('stTitle').focus(); return;
+    }
+    if (a === 'sup' && k > 0) { var t = S[k - 1]; S[k - 1] = S[k]; S[k] = t; }
+    else if (a === 'sdown' && k < S.length - 1) { var u = S[k + 1]; S[k + 1] = S[k]; S[k] = u; }
+    else if (a === 'sdel') {
+      if (S.length <= 1) { note('Sách cần còn ít nhất một truyện'); return; }
+      if (b.getAttribute('data-arm') !== '1') {
+        b.setAttribute('data-arm', '1'); b.textContent = 'Bấm lần nữa để xóa';
+        setTimeout(function () { if (b.isConnected) { b.removeAttribute('data-arm'); b.textContent = 'Xóa'; } }, 3000);
+        return;
+      }
+      gone = S.splice(k, 1)[0];
+    } else return;
+    saveStories().then(function () {
+      renderSt(); renderRec();
+      if (gone && AUD[gone.id]) api('audio/' + gone.id, { method: 'DELETE' }).then(function () { delete AUD[gone.id]; renderRec(); });
+    }).catch(function () { S = before; stRemote = was; renderSt(); note('Không lưu được.'); });
+  });
+
   /* ---------- đăng nhập và khởi động ---------- */
   function showPanel() {
     $('login').hidden = true; $('panel').hidden = false; $('logout').hidden = false;
     Promise.all([
       loadAudio(),
+      api('stories?fresh=1').then(function (r) { return r.ok ? r.json() : { stories: null }; }).then(function (d) {
+        if (Array.isArray(d.stories) && d.stories.length) { S = d.stories; stRemote = true; }
+        renderSt(); renderRec();
+      }),
       api('chiem-nghiem?fresh=1').then(function (r) { return r.ok ? r.json() : { sections: [] }; }).then(function (d) { remote = d.sections || []; renderCn(); renderRec(); })
     ]);
   }
@@ -247,7 +339,7 @@
     b.addEventListener('click', function () {
       var t = b.getAttribute('data-tab');
       [].forEach.call(document.querySelectorAll('[data-tab]'), function (x) { x.setAttribute('aria-selected', String(x === b)); });
-      $('tabRec').hidden = t !== 'rec'; $('tabCn').hidden = t !== 'cn';
+      $('tabRec').hidden = t !== 'rec'; $('tabSt').hidden = t !== 'st'; $('tabCn').hidden = t !== 'cn';
     });
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('rec').hidden) closeRec(); });

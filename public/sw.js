@@ -2,7 +2,7 @@
    Trang, mã nguồn và nội dung lấy bản mới từ mạng trước (tối đa 4 giây), chỉ khi không có mạng
    mới dùng bản đã lưu. Nhờ vậy đưa bản mới lên host là thấy ngay ở lần mở kế tiếp.
    Mỗi lần sửa, nên đổi VERSION để máy người đọc dọn bộ nhớ cũ. */
-var VERSION = 'tkk-v6';
+var VERSION = 'tkk-v7';
 var FONTS = 'tkk-fonts-v1';
 var SHELL = [
   './', 'index.html', 'css/style.css', 'js/content.js', 'js/chiem-nghiem.js', 'js/app.js',
@@ -61,10 +61,12 @@ self.addEventListener('fetch', function (e) {
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
   if (url.origin === self.location.origin && /\/api\//.test(url.pathname)) {
-    /* chỉ lưu danh sách bài và chiêm nghiệm chung để đọc khi mất mạng; âm thanh và đăng nhập đi thẳng ra mạng */
-    if (/\/api\/(audio-list|chiem-nghiem)$/.test(url.pathname)) e.respondWith(networkFirst(req));
+    /* chỉ lưu danh sách bài, truyện và chiêm nghiệm chung để đọc khi mất mạng; âm thanh và đăng nhập đi thẳng ra mạng */
+    if (/\/api\/(audio-list|chiem-nghiem|stories)$/.test(url.pathname)) e.respondWith(networkFirst(req));
     return;
   }
+  /* nhạc nền đi thẳng ra mạng: tệp lớn và trình duyệt cần tua theo từng đoạn */
+  if (url.origin === self.location.origin && /\/audio\//.test(url.pathname)) return;
   if (url.origin === self.location.origin && /\/admin(\.html)?$|\/js\/admin\.js$/.test(url.pathname)) return;
   if (url.origin === self.location.origin) {
     e.respondWith(networkFirst(req));

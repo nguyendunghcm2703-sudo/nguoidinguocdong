@@ -4,9 +4,10 @@
      GET  /api/audio-list        danh sách bài đã có thu âm
      GET  /api/audio/<id>        file thu âm (hỗ trợ tua)
      GET  /api/chiem-nghiem      các điều chiêm nghiệm chung do admin thêm
+     GET  /api/stories           danh sách truyện do admin sửa (null nếu chưa sửa lần nào, khi đó dùng bản trong sách)
    Chỉ admin (cần đăng nhập bằng mật khẩu):
      POST /api/login, POST /api/logout, GET /api/me
-     PUT/DELETE /api/audio/<id>, PUT /api/chiem-nghiem */
+     PUT/DELETE /api/audio/<id>, PUT /api/chiem-nghiem, PUT /api/stories */
 
 var MAX_AUDIO = 24 * 1024 * 1024;     /* KV cho tối đa 25 MiB mỗi giá trị */
 var SESSION_SECONDS = 8 * 3600;
@@ -64,6 +65,37 @@ function cleanSections(list) {
     var paras = s.paras.map(function (p) { return String(p).trim().slice(0, 4000); }).filter(Boolean).slice(0, 30);
     if (!ID_RE.test(id) || !title || !paras.length) return null;
     out.push({ id: id, title: title, paras: paras });
+  }
+  return out;
+}
+
+var PARTS_OK = ['dawn', 'morning', 'noon', 'dusk', 'night'];
+function txt(v, max) { return String(v == null ? '' : v).replace(/[<>]/g, '').trim().slice(0, max); }
+function cleanStories(list) {
+  if (!Array.isArray(list) || list.length < 1 || list.length > 300) return null;
+  var out = [], seen = {};
+  for (var i = 0; i < list.length; i++) {
+    var s = list[i];
+    if (!s || typeof s !== 'object' || !Array.isArray(s.paras)) return null;
+    var id = String(s.id || '');
+    var title = txt(s.title, 200);
+    var paras = s.paras.map(function (p) { return txt(p, 4000); }).filter(Boolean).slice(0, 30);
+    var pv = s.proverb && typeof s.proverb === 'object' ? s.proverb : {};
+    var ptext = txt(pv.text, 400);
+    if (!ID_RE.test(id) || seen[id] || PARTS_OK.indexOf(s.part) < 0 || !title || !paras.length || !ptext) return null;
+    seen[id] = 1;
+    var o = { id: id, part: s.part, title: title };
+    if (s.kind === 'real' || s.kind === 'idea') o.kind = s.kind;
+    o.paras = paras;
+    o.proverb = { text: ptext };
+    var by = txt(pv.by, 200); if (by) o.proverb.by = by;
+    o.task = txt(s.task, 600);
+    if (o.kind && s.source && typeof s.source === 'object') {
+      var url = txt(s.source.url, 500), name = txt(s.source.name, 200), idea = txt(s.source.idea, 400);
+      if (/^https?:\/\/[^\s]+$/i.test(url) && name) { o.source = { name: name, url: url }; if (idea) o.source.idea = idea; }
+    }
+    if (o.kind && !o.source) delete o.kind;
+    out.push(o);
   }
   return out;
 }
@@ -177,6 +209,24 @@ export async function onRequest(context) {
       if (!clean) return json({ error: 'bad-data' }, 400);
       await env.STORE.put(dkey, JSON.stringify({ sections: clean }));
       return json({ ok: true, count: clean.length });
+    }
+    return json({ error: 'method' }, 405);
+  }
+
+  if (path === 'stories') {
+    var skey = 'data:stories';
+    if (method === 'GET') {
+      var stext = await env.STORE.get(skey, Object.assign({ type: 'text' }, cacheOpt));
+      return new Response(stext || '{"stories":null}', { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-cache' } });
+    }
+    if (method === 'PUT') {
+      if (!(await isAdmin(req, env))) return json({ error: 'unauthorized' }, 401);
+      var sp;
+      try { sp = await req.json(); } catch (e) { return json({ error: 'bad-request' }, 400); }
+      var sc = cleanStories(sp && sp.stories);
+      if (!sc) return json({ error: 'bad-data' }, 400);
+      await env.STORE.put(skey, JSON.stringify({ stories: sc }));
+      return json({ ok: true, count: sc.length });
     }
     return json({ error: 'method' }, 405);
   }

@@ -1,7 +1,23 @@
 (function () {
   'use strict';
 
-  var B = window.BOOK, S = B.stories, ORDER = B.order, PARTS = B.parts;
+  var B = window.BOOK, ORDER = B.order, PARTS = B.parts;
+  /* truyện do admin sửa: dùng bản đã lưu ở lần mở trước (nếu có), bản trong sách là dự phòng */
+  function goodStories(l) {
+    return Array.isArray(l) && l.length > 0 && l.every(function (s) {
+      return s && s.id && s.title && ORDER.indexOf(s.part) >= 0 && Array.isArray(s.paras) && s.paras.length && s.proverb && s.proverb.text;
+    });
+  }
+  function byPart(l) {
+    return l.map(function (s, k) { return { s: s, k: k }; }).sort(function (a, b) {
+      return ORDER.indexOf(a.s.part) - ORDER.indexOf(b.s.part) || a.k - b.k;
+    }).map(function (o) { return o.s; });
+  }
+  try {
+    var cs = JSON.parse(localStorage.getItem('tkk-stories') || 'null');
+    if (goodStories(cs)) B.stories = byPart(cs);
+  } catch (e) {}
+  var S = B.stories;
   var X = window.CHIEM_NGHIEM || { sections: [] };
   var RBASE = X.sections || [], R = RBASE.slice();
   function setRemote(list) {
@@ -17,7 +33,7 @@
   var ICO = {
     heart: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
     speak: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M16.5 9a4 4 0 0 1 0 6"/></svg>',
-    rain:  '<svg class="ic" viewBox="0 0 24 24"><path d="M7 15h10a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 7.8 7.6 3.7 3.7 0 0 0 7 15z"/><path d="M9 18v2.5M13 18v2.5M17 18v2.5"/></svg>',
+    music: '<svg class="ic" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>',
     card:  '<svg class="ic" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
     play:  '<svg class="ic i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
     pause: '<svg class="ic i-pause" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
@@ -31,8 +47,10 @@
   var prevB = document.getElementById('prev');
   var nextB = document.getElementById('next');
   var noteEl = document.getElementById('note');
-  var ac, gain, rainOn = false, rainVol = parseInt(get('tkk-rain') || '50', 10);
-  if (!(rainVol >= 0 && rainVol <= 100)) rainVol = 50;
+  var ac, gain, musOn = false, musVol = parseInt(get('tkk-mus') || '50', 10);
+  if (!(musVol >= 0 && musVol <= 100)) musVol = 50;
+  var MUS_URL = 'audio/nhac-nen.mp3';
+  var mus = new Audio(); mus.loop = true; mus.preload = 'none';
   var SKINS = ['co', 'den', 'sang', 'toi'];
   var SKIN_NAME = { co: 'Cổ', den: 'Đèn dầu', sang: 'Sáng', toi: 'Tối' };
   var SKIN_BAR = { co: '#d9c08c', den: '#2c1d0f', sang: '#f4f2f8', toi: '#1b1730' };
@@ -123,8 +141,8 @@
   function crowd(n, y, s, seed) {
     var r = rnd(seed), W = 780, step = W / n, out = '';
     for (var k = 0; k < n; k++) {
-      var x = k * step + (r() - .5) * step * .55, sc = s * (.9 + r() * .24);
-      out += '<use href="#fig" transform="translate(' + x.toFixed(1) + ' ' + y + ') scale(' + sc.toFixed(2) + ')"/>';
+      var x = k * step + (r() - .5) * step * .55, sc = s * (.84 + r() * .3);
+      out += '<use href="#' + (r() < .4 ? 'pb' : 'pa') + '" transform="translate(' + x.toFixed(1) + ' ' + y + ') scale(' + sc.toFixed(2) + ')"/>';
     }
     return '<g>' + out + '</g><g transform="translate(-780 0)">' + out + '</g>';
   }
@@ -296,15 +314,15 @@
     return ios ? 'Trên iPhone: bấm nút Chia sẻ của Safari, chọn "Thêm vào MH chính" để cài sách.' : '';
   }
 
-  function rainRow() {
-    return '<div class="rain"><button class="rbtn" data-act="rain" aria-pressed="' + rainOn + '" aria-label="Bật hoặc tắt tiếng mưa">' + ICO.rain + '<span>Mưa</span></button>' +
-      '<input class="rvol" type="range" min="0" max="100" step="5" value="' + rainVol + '" aria-label="Âm lượng tiếng mưa"></div>';
+  function musRow() {
+    return '<div class="rain"><button class="rbtn" data-act="music" aria-pressed="' + musOn + '" aria-label="Bật hoặc tắt nhạc nền">' + ICO.music + '<span>Nhạc</span></button>' +
+      '<input class="rvol" type="range" min="0" max="100" step="5" value="' + musVol + '" aria-label="Âm lượng nhạc nền"></div>';
   }
   function listenBar(id) {
     return '<div class="listen" data-id="' + id + '" role="group" aria-label="Nghe bài">' +
       '<button class="lbtn" data-act="listen" aria-label="Nghe hoặc dừng bài này">' + ICO.play + ICO.pause + '</button>' +
       '<div class="lmid"><div class="lt">Nghe bài này</div><div class="lbar"><i></i></div>' +
-      '<div class="lmeta"><span class="lsrc"></span><span class="ltime"></span></div></div>' + rainRow() + '</div>' +
+      '<div class="lmeta"><span class="lsrc"></span><span class="ltime"></span></div></div>' + musRow() + '</div>' +
       '<p class="voice-hint" role="status" hidden></p>';
   }
 
@@ -319,7 +337,7 @@
       (resume ? '<button class="btn ghost" data-act="resume">Đọc tiếp trang ' + (last + 1) + '</button>' : '') +
       '<button class="btn ghost" data-act="bookListen">' + ICO.speak + '<span data-bl>Nghe cả sách</span></button>' +
       '<button class="btn ghost" data-act="install" ' + (deferred ? '' : 'hidden') + '>Cài lên màn hình</button></div>' +
-      '<div class="listen coverrain" role="group" aria-label="Tiếng mưa">' + rainRow() + '</div>' +
+      '<div class="listen coverrain" role="group" aria-label="Nhạc nền">' + musRow() + '</div>' +
       '<div class="cover-foot"><p class="foot">' + S.length + ' truyện · đọc được khi không có mạng' + (installHint() ? ' · ' + installHint() : '') + '</p>' +
       '<div class="seal" aria-hidden="true"><span>Từng</span><span>Khoảnh</span><span>Khắc</span></div></div>' +
       '</article>';
@@ -367,9 +385,9 @@
       origin(s) +
       '<figure class="proverb"><figcaption>Phương ngôn</figcaption><blockquote class="hand" data-pen>' + s.proverb.text + '</blockquote><p class="by">' + by(s.proverb) + '</p>' +
       '<button class="chip pen-btn" data-act="rewrite">' + ICO.pen + '<span>Viết lại</span></button></figure>' +
-      '<section class="task"><h2>Việc nhỏ cho hôm nay</h2><p>' + s.task + '</p>' +
+      (s.task ? '<section class="task"><h2>Việc nhỏ cho hôm nay</h2><p>' + s.task + '</p>' +
       '<div class="t-bar"><i></i></div><p class="t-out" role="status"></p>' +
-      '<button class="btn ghost" data-act="task">Bắt đầu 1 phút</button></section>' +
+      '<button class="btn ghost" data-act="task">Bắt đầu 1 phút</button></section>' : '') +
       '<section class="pause"><button class="btn ghost" data-act="breath">Dừng lại một nhịp</button>' +
       '<p class="hint">10 giây hít thở trước khi sang trang.</p></section>' +
       '<div class="acts">' +
@@ -597,6 +615,7 @@
       el.querySelector('.lt').textContent = on ? 'Đang nghe' : (me && !play.tts && aud.currentTime > 0 ? 'Tạm dừng' : 'Nghe bài này');
     });
     [].forEach.call(document.querySelectorAll('[data-bl]'), function (b) { b.textContent = play.book ? 'Dừng nghe' : 'Nghe cả sách'; });
+    musDuck();
   }
   aud.addEventListener('timeupdate', syncListen);
   aud.addEventListener('loadedmetadata', syncListen);
@@ -698,37 +717,45 @@
     else { play.book = false; go(LAST, 'next'); keepPlay = false; play.playing = false; syncListen(); }
   }
 
-  function rainSync() {
-    [].forEach.call(document.querySelectorAll('.rbtn'), function (b) { b.setAttribute('aria-pressed', String(rainOn)); });
-    [].forEach.call(document.querySelectorAll('.rvol'), function (r) { r.value = rainVol; });
+  function musSync() {
+    [].forEach.call(document.querySelectorAll('.rbtn'), function (b) { b.setAttribute('aria-pressed', String(musOn)); });
+    [].forEach.call(document.querySelectorAll('.rvol'), function (r) { r.value = musVol; });
   }
-  function rainGain() { return rainOn ? rainVol / 100 * 0.18 : 0; }
-  function toggleRain(forceOn) {
+  /* nhạc nhỏ xuống khi đang nghe giọng đọc, để không át lời */
+  function musGain() { return musOn ? musVol / 100 * 0.9 * (play && play.playing ? 0.35 : 1) : 0; }
+  function musDuck() { if (gain && ac) gain.gain.setTargetAtTime(musGain(), ac.currentTime, 0.4); }
+  function toggleMusic(forceOn) {
     try {
       if (!ac) {
         ac = new (window.AudioContext || window.webkitAudioContext)();
-        var len = ac.sampleRate * 2, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
-        for (var k = 0; k < len; k++) d[k] = Math.random() * 2 - 1;
-        var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
-        var hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 500;
-        var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3500;
+        mus.src = MUS_URL;
+        var node = ac.createMediaElementSource(mus);
         gain = ac.createGain(); gain.gain.value = 0;
-        src.connect(hp); hp.connect(lp); lp.connect(gain); gain.connect(ac.destination);
-        src.start();
+        node.connect(gain); gain.connect(ac.destination);
       }
       if (ac.state === 'suspended') ac.resume();
-      rainOn = forceOn === true ? true : !rainOn;
-      gain.gain.setTargetAtTime(rainGain(), ac.currentTime, 0.3);
-      rainSync();
+      musOn = forceOn === true ? true : !musOn;
+      if (musOn) {
+        var pr = mus.play();
+        if (pr && pr.catch) pr.catch(function () { musOn = false; musSync(); note('Chưa phát được nhạc nền'); });
+      } else {
+        setTimeout(function () { if (!musOn) mus.pause(); }, 1600);
+      }
+      gain.gain.setTargetAtTime(musGain(), ac.currentTime, 0.4);
+      musSync();
     } catch (e) { note('Thiết bị này chưa phát được âm thanh'); }
   }
   document.addEventListener('input', function (e) {
     if (!e.target.classList || !e.target.classList.contains('rvol')) return;
-    rainVol = +e.target.value; put('tkk-rain', String(rainVol));
-    if (rainVol > 0 && !rainOn) toggleRain(true);
-    else if (gain) gain.gain.setTargetAtTime(rainGain(), ac.currentTime, 0.1);
-    rainSync();
+    musVol = +e.target.value; put('tkk-mus', String(musVol));
+    if (musVol > 0 && !musOn) toggleMusic(true);
+    else musDuck();
+    musSync();
   });
+  /* chỉ hiện nút nhạc khi đã có file nhạc trong thư mục audio */
+  fetch(MUS_URL, { method: 'HEAD' }).then(function (r) {
+    if (r.ok && /audio|mpeg|octet/.test(r.headers.get('content-type') || '')) document.documentElement.setAttribute('data-mus', '1');
+  }).catch(function () {});
 
   function closeSkin() {
     var pp = document.getElementById('skinpop'), sb = document.getElementById('skinB');
@@ -879,7 +906,7 @@
     else if (a === 'shShare') shareCard();
     else if (a === 'shSave') saveCard();
     else if (a === 'shClose') document.getElementById('sheet').hidden = true;
-    else if (a === 'rain') toggleRain();
+    else if (a === 'music') toggleMusic();
     else if (a === 'reload') location.reload();
     else if (a === 'install' && deferred) {
       deferred.prompt();
@@ -918,6 +945,18 @@
   go(0, 'next');
   loadJson('api/audio-list', function (d) {
     if (d.items) { AUD = d.items; put('tkk-aud', JSON.stringify(AUD)); syncListen(); }
+  });
+  loadJson('api/stories', function (d) {
+    if (!goodStories(d.stories)) return;
+    var next = byPart(d.stories);
+    if (JSON.stringify(next) === JSON.stringify(S)) return;
+    put('tkk-stories', JSON.stringify(next));
+    /* đang đọc dở thì để bản mới cho lần mở sau, kẻo trang đang đọc bị lệch */
+    if (view === 'book' && i <= 1 && !play.playing) {
+      S.length = 0; next.forEach(function (x) { S.push(x); });
+      LAST = FIRST + S.length; TOTAL = LAST + 1;
+      go(i, 'next');
+    }
   });
   loadJson('api/chiem-nghiem', function (d) {
     if (!Array.isArray(d.sections)) return;

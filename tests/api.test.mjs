@@ -51,6 +51,21 @@ test('chiêm nghiệm chung: lưu, làm sạch, từ chối dữ liệu sai', as
   assert.equal((await call('chiem-nghiem', { method: 'PUT', headers: { cookie }, body: JSON.stringify({ sections: [{ id: 'Sai Id', title: 't', paras: ['x'] }] }) })).status, 400);
   assert.equal((await call('chiem-nghiem', { method: 'PUT', body: '{}' })).status, 401);
 });
+test('truyện: chưa sửa thì null, lưu và làm sạch, từ chối dữ liệu sai', async () => {
+  assert.equal((await (await call('stories')).json()).stories, null);
+  const st = { id: 's21', part: 'dawn', title: 'Truyện <b>mới</b>', paras: ['Đoạn một', ' '], proverb: { text: 'Câu', by: 'Ai' }, task: '', kind: 'real', source: { name: 'Báo', url: 'https://bao.test/x' } };
+  assert.equal((await call('stories', { method: 'PUT', headers: { cookie }, body: JSON.stringify({ stories: [st] }) })).status, 200);
+  const got = (await (await call('stories?fresh=1')).json()).stories[0];
+  assert.equal(got.title, 'Truyện bmới/b'); assert.equal(got.paras.length, 1); assert.equal(got.source.url, 'https://bao.test/x');
+  const bad = (x) => call('stories', { method: 'PUT', headers: { cookie }, body: JSON.stringify({ stories: [x] }) });
+  assert.equal((await bad({ ...st, part: 'lunch' })).status, 400);
+  assert.equal((await bad({ ...st, id: 'Sai Id' })).status, 400);
+  assert.equal((await bad({ ...st, proverb: {} })).status, 400);
+  const nosrc = await call('stories', { method: 'PUT', headers: { cookie }, body: JSON.stringify({ stories: [{ ...st, source: { name: 'x', url: 'javascript:alert(1)' } }] }) });
+  assert.equal(nosrc.status, 200);
+  assert.equal((await (await call('stories?fresh=1')).json()).stories[0].kind, undefined);
+  assert.equal((await call('stories', { method: 'PUT', body: '{}' })).status, 401);
+});
 test('worker: /api đi vào API, còn lại trả file tĩnh', async () => {
   assert.equal((await worker.fetch(new Request('https://x.test/api/me'), env, {})).status, 200);
   assert.equal(await (await worker.fetch(new Request('https://x.test/admin'), env, {})).text(), 'tinh');

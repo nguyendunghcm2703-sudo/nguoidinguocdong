@@ -30,6 +30,7 @@
   <section id="panel" hidden>
     <div class="pills" role="tablist" aria-label="Quản trị">
       <button class="pill" role="tab" data-tab="rec" aria-selected="true">Thu âm</button>
+      <button class="pill" role="tab" data-tab="st" aria-selected="false">Truyện</button>
       <button class="pill" role="tab" data-tab="cn" aria-selected="false">Chiêm nghiệm chung</button>
     </div>
 
@@ -38,6 +39,39 @@
       <h1 class="h-story">Giọng đọc cho từng bài</h1>
       <p class="lead">Bài nào đã thu thì người đọc nghe giọng của bạn. Bài chưa thu vẫn dùng giọng máy.</p>
       <div id="recList"></div>
+    </div>
+
+    <div id="tabSt" class="page" hidden>
+      <p class="kick">Đọc sách</p>
+      <h1 class="h-story">Thêm và sửa truyện</h1>
+      <p class="lead" id="stState"></p>
+      <form id="stForm" class="tam-form">
+        <label class="h2" for="stPart">Buổi trong ngày</label>
+        <select id="stPart" class="adm-in"><option value="dawn">Bình minh</option><option value="morning">Buổi sáng</option><option value="noon">Buổi trưa</option><option value="dusk">Chiều tà</option><option value="night">Đêm</option></select>
+        <label class="h2" for="stTitle">Tiêu đề</label>
+        <input id="stTitle" class="adm-in" maxlength="200" required>
+        <label class="h2" for="stText">Nội dung (cách nhau một dòng trống là sang đoạn mới)</label>
+        <textarea id="stText" rows="10" required></textarea>
+        <label class="h2" for="stProv">Phương ngôn</label>
+        <input id="stProv" class="adm-in" maxlength="400" required>
+        <label class="h2" for="stBy">Tác giả hoặc xuất xứ của phương ngôn</label>
+        <input id="stBy" class="adm-in" maxlength="200">
+        <label class="h2" for="stTask">Việc nhỏ cho hôm nay (để trống thì không hiện)</label>
+        <textarea id="stTask" rows="3" maxlength="600"></textarea>
+        <label class="h2" for="stKind">Loại truyện</label>
+        <select id="stKind" class="adm-in"><option value="">Truyện sáng tác</option><option value="real">Chuyện có thật kể lại từ báo</option><option value="idea">Truyện sáng tác lấy ý từ một bài báo</option></select>
+        <div id="stSrc" hidden>
+          <label class="h2" for="stSrcName">Tên nguồn (tờ báo)</label>
+          <input id="stSrcName" class="adm-in" maxlength="200">
+          <label class="h2" for="stSrcUrl">Đường dẫn bài báo</label>
+          <input id="stSrcUrl" class="adm-in" type="url" maxlength="500" placeholder="https://">
+          <label class="h2" for="stSrcIdea">Ý lấy từ bài báo (chỉ dùng cho truyện lấy ý)</label>
+          <input id="stSrcIdea" class="adm-in" maxlength="400">
+        </div>
+        <div class="btns"><button class="btn" type="submit" id="stSave">Thêm truyện này</button><button class="btn ghost" type="button" id="stCancel" hidden>Hủy sửa</button></div>
+      </form>
+      <h2 class="h2">Các truyện trong sách</h2>
+      <div id="stList"></div>
     </div>
 
     <div id="tabCn" class="page" hidden>

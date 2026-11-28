@@ -481,7 +481,8 @@ html[data-skin="sang"] .seal, html[data-skin="toi"] .seal { display: none; }
 .adm-head .mini { min-height: 36px; padding: .25rem .9rem; border-radius: 999px; }
 
 
-/* ---------- mưa cạnh nút nghe, khay giao diện ---------- */
+/* ---------- nhạc nền cạnh nút nghe, khay giao diện ---------- */
+html:not([data-mus="1"]) .rain, html:not([data-mus="1"]) .coverrain { display: none; }
 .rain { flex: none; display: flex; align-items: center; gap: .5rem; width: 100%; padding-top: .45rem; margin-top: .1rem; border-top: 1px dashed var(--ln); }
 .listen { flex-wrap: wrap; }
 .listen .lmid { flex: 1 1 8rem; }
@@ -507,16 +508,18 @@ html[data-skin="sang"] .seal, html[data-skin="toi"] .seal { display: none; }
 .birds, .gdash { stroke: var(--ink); }
 .m0 { stop-color: var(--mist); stop-opacity: 0; }
 .m1 { stop-color: var(--mist); stop-opacity: .95; }
-.cbob { animation: cbob .9s ease-in-out infinite; }
+.cbob { animation: cbob 1.5s ease-in-out infinite; }
 .cleg { transform-box: fill-box; transform-origin: 50% 0%; }
-.cl1 { animation: cswA .9s ease-in-out infinite alternate; }
-.cl2 { animation: cswB .9s ease-in-out infinite alternate; }
-.ctail { transform-box: fill-box; transform-origin: 0% 50%; animation: cflap 1.3s ease-in-out infinite alternate; }
+.cl1 { animation: cswA 1.5s ease-in-out infinite alternate; }
+.cl2 { animation: cswB 1.5s ease-in-out infinite alternate; }
+.carm { transform-box: fill-box; transform-origin: 50% 0%; animation: cswB 1.5s ease-in-out infinite alternate; }
+.carm.c2 { animation: cswA 1.5s ease-in-out infinite alternate; }
+.clantern { transform-box: fill-box; transform-origin: 50% 0%; animation: clswing 1.5s ease-in-out infinite alternate; }
 .clamp { animation: glow 4s ease-in-out infinite; }
-@keyframes cbob { 0%, 50%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-1.1px); } }
-@keyframes cswA { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
-@keyframes cswB { from { transform: rotate(18deg); } to { transform: rotate(-18deg); } }
-@keyframes cflap { from { transform: rotate(-5deg); } to { transform: rotate(7deg); } }
+@keyframes cbob { 0%, 50%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-1.6px); } }
+@keyframes cswA { from { transform: rotate(-12deg); } to { transform: rotate(13deg); } }
+@keyframes cswB { from { transform: rotate(12deg); } to { transform: rotate(-13deg); } }
+@keyframes clswing { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
 
 .nib svg { width: 100%; height: 100%; display: block; }
 
