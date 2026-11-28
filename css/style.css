@@ -81,13 +81,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
   color: #fff;
   transition: height .75s cubic-bezier(.3,.7,.2,1);
 }
-body.reading .hero { height: 128px; }
-body.reading .scene { width: min(100%, 420px); }
+body.reading .hero { height: 170px; }
 .scene {
   position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: min(100%, 640px); height: 100%; display: block;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+  width: min(100%, 900px); height: 100%; display: block;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent);
 }
 .layer.far  { fill: var(--crowd); stroke: var(--crowd); opacity: .28; }
 .layer.near { fill: var(--crowd); stroke: var(--crowd); opacity: .5; }
@@ -327,6 +326,8 @@ body.reading .hero-kick { opacity: 0; visibility: hidden; }
 .dcard:hover { border-color: var(--ac); }
 .dcard b { font: 600 .72rem/1.3 var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--ac); }
 .dcard em { font: 500 1.1rem/1.35 var(--f-disp); font-style: normal; }
+.dcard .dq { font-size: .95rem; line-height: 1.45; }
+.dcard .dv { font: italic 500 .95rem/1.5 var(--f-disp); color: var(--mut); margin: .25rem 0 .35rem; }
 .dcard small { color: var(--mut); font-size: .85rem; }
 .settings { display: grid; gap: .6rem; padding-top: .5rem; border-top: 1px solid var(--ln); }
 .set-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; }
@@ -482,7 +483,8 @@ html[data-skin="sang"] .seal, html[data-skin="toi"] .seal { display: none; }
 .adm-head .mini { min-height: 36px; padding: .25rem .9rem; border-radius: 999px; }
 
 
-/* ---------- mưa cạnh nút nghe, khay giao diện ---------- */
+/* ---------- nhạc nền cạnh nút nghe, khay giao diện ---------- */
+html:not([data-mus="1"]) .rain, html:not([data-mus="1"]) .coverrain { display: none; }
 .rain { flex: none; display: flex; align-items: center; gap: .5rem; width: 100%; padding-top: .45rem; margin-top: .1rem; border-top: 1px dashed var(--ln); }
 .listen { flex-wrap: wrap; }
 .listen .lmid { flex: 1 1 8rem; }
@@ -508,15 +510,43 @@ html[data-skin="sang"] .seal, html[data-skin="toi"] .seal { display: none; }
 .birds, .gdash { stroke: var(--ink); }
 .m0 { stop-color: var(--mist); stop-opacity: 0; }
 .m1 { stop-color: var(--mist); stop-opacity: .95; }
-.cbob { animation: cbob .9s ease-in-out infinite; }
-.cleg { transform-box: fill-box; transform-origin: 50% 0%; }
-.cl1 { animation: cswA .9s ease-in-out infinite alternate; }
-.cl2 { animation: cswB .9s ease-in-out infinite alternate; }
-.ctail { transform-box: fill-box; transform-origin: 0% 50%; animation: cflap 1.3s ease-in-out infinite alternate; }
+/* thiền hành: bước rất nhỏ, chậm, nhấc chân rồi đặt xuống; chân sau lệch nửa nhịp */
+.cbob { animation: wbob 4.4s linear infinite; }
+.wh, .wk, .wf, .wa, .wl { animation-duration: 4.4s; animation-iteration-count: infinite; animation-timing-function: ease-in-out; }
+.hN { transform-origin: 1px -50px; animation-name: whipN; }
+.hF { transform-origin: 4px -50px; animation-name: whipF; animation-delay: -2.2s; }
+.kN { transform-origin: -6px -29px; animation-name: wknee; }
+.kF { transform-origin: 8px -29px; animation-name: wknee; animation-delay: -2.2s; }
+.fN { transform-origin: -8px -6.5px; animation-name: wankle; }
+.fF { transform-origin: 14px -7.5px; animation-name: wankle; animation-delay: -2.2s; }
+.wN { transform-origin: -3px -76px; animation-name: warmN; }
+.wF { transform-origin: 3px -76px; animation-name: warmF; }
+.wl { transform-origin: -13.6px -47px; animation-name: wlant; }
 .clamp { animation: glow 4s ease-in-out infinite; }
-@keyframes cbob { 0%, 50%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-1.1px); } }
-@keyframes cswA { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
-@keyframes cswB { from { transform: rotate(18deg); } to { transform: rotate(-18deg); } }
-@keyframes cflap { from { transform: rotate(-5deg); } to { transform: rotate(7deg); } }
+@keyframes wbob { 0%, 50%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-.6px); } }
+@keyframes whipN { 0% { transform: rotate(-5deg); animation-timing-function: linear; } 50% { transform: rotate(-13deg); } 100% { transform: rotate(-5deg); } }
+@keyframes whipF { 0% { transform: rotate(14deg); animation-timing-function: linear; } 50% { transform: rotate(6deg); } 100% { transform: rotate(14deg); } }
+@keyframes wknee { 0% { transform: rotate(-1deg); } 40% { transform: rotate(-2deg); } 58% { transform: rotate(-14deg); } 74% { transform: rotate(-20deg); } 90% { transform: rotate(-6deg); } 100% { transform: rotate(-1deg); } }
+@keyframes wankle { 0% { transform: rotate(0deg); } 40% { transform: rotate(3deg); } 58% { transform: rotate(8deg); } 74% { transform: rotate(12deg); } 90% { transform: rotate(3deg); } 100% { transform: rotate(0deg); } }
+@keyframes warmN { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(2deg); } }
+@keyframes warmF { 0%, 100% { transform: rotate(2deg); } 50% { transform: rotate(-2deg); } }
+@keyframes wlant { 0%, 100% { transform: rotate(1deg); } 50% { transform: rotate(-1deg); } }
 
 .nib svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- máy tính: banner đầy đủ hơn, khung đọc rộng hơn ---------- */
+@media (min-width: 1000px) {
+  .hero { height: 440px; }
+  body.reading .hero { height: 300px; }
+  .scene { width: min(100%, 1100px); }
+  .hero-kick { font-size: 1.5rem; max-width: 30%; top: 72px; }
+  .app { max-width: 56rem; }
+  .page { padding: 2.8rem 3.6rem; gap: 1.9rem; }
+  .prose, .refl-body, .origin, .lead { max-width: 41rem; margin-left: auto; margin-right: auto; }
+  .epi { max-width: 38rem; margin-left: auto; margin-right: auto; }
+  .h-story, .kick, .listen { max-width: 41rem; margin-left: auto; margin-right: auto; width: 100%; }
+  :root[data-skin] .prose, :root[data-skin] .refl-body { font-size: 1.3rem; line-height: 1.8; }
+  :root[data-skin] .h-story { font-size: 3.1rem; }
+  .strip { margin: 20px 0; }
+  .mtab { max-width: 22rem; min-height: 52px; font-size: 1.05rem; }
+}
