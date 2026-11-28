@@ -18,11 +18,11 @@ window.CHIEM_NGHIEM = {
     {
       id: 'moi-quan-he',
       title: 'Về các mối quan hệ',
-      paras: [
-        'Con người có thể chọn một cuộc sống lặng lẽ để tìm thấy bình yên, cũng có thể mở lòng để đón nhận những mối quan hệ và sự gắn kết. Mỗi người đều có quyền lựa chọn cách sống khiến mình cảm thấy hạnh phúc. Nhưng dù yêu thương ai, gắn bó với ai, cũng đừng trao cả thế giới của mình vào tay một người. Bởi tình cảm dù sâu đậm đến đâu cũng không thể thay thế tất cả những giá trị khác làm nên cuộc đời.',
-        'Không ai có thể hứa sẽ đồng hành cùng ta suốt mọi chặng đường. Có người đến để sẻ chia một quãng đời, có người ở lại qua năm tháng, cũng có người rồi sẽ chọn một con đường khác. Đó là lẽ tự nhiên của cuộc sống. Điều đáng sợ không phải là một người rời đi, mà là khi họ bước khỏi cuộc đời ta, ta mới nhận ra mình đã bỏ quên tất cả những điều từng khiến cuộc sống này trở nên có ý nghĩa.',
-        'Vì thế, hãy yêu thương nhưng đừng đánh mất chính mình; hãy gắn bó nhưng đừng biến một người thành lẽ sống duy nhất. Hãy giữ cho mình những niềm vui riêng, những điều muốn khám phá, những mục tiêu muốn theo đuổi và những mối quan hệ đáng trân trọng. Để dù cuộc đời có đổi thay, dù có người đến hay đi, ta vẫn còn một thế giới của riêng mình để trở về, một con đường để tiếp tục bước tới và một lý do để sống những ngày tháng thật ý nghĩa.'
-      ]
+     paras: [
+  'Con người có thể chọn một cuộc sống lặng lẽ để tìm thấy bình yên, cũng có thể mở lòng đón nhận những mối quan hệ và sự gắn kết. Mỗi người đều có quyền lựa chọn cách sống khiến mình cảm thấy hạnh phúc. Yêu thương một người thật sâu đậm là điều đáng trân trọng, và tình yêu ấy không nhất thiết phải kết thúc khi người mình thương không còn hiện diện. Nhưng dù yêu thương ai, gắn bó với ai, cũng đừng để toàn bộ ý nghĩa cuộc đời mình chỉ còn phụ thuộc vào sự hiện diện của một người. Bởi cuộc sống còn có nhiều giá trị khác mà ta cần gìn giữ, vun đắp và tiếp tục khám phá.',
+  'Không ai có thể đồng hành cùng ta trong tất cả những chặng đường của cuộc đời. Có người cùng ta đi qua những năm tháng đẹp đẽ, có người để lại những ký ức không bao giờ phai, và cũng có những cuộc chia xa nằm ngoài mong muốn của mỗi người. Nhưng sự hiện diện hay vắng mặt không quyết định tất cả giá trị của một tình yêu. Có những người dù đã rời xa vẫn luôn hiện diện trong trái tim ta, trong những ký ức, trong cách ta nhìn nhận cuộc sống và trong cả những điều ta lựa chọn mỗi ngày. Điều đáng quý không phải là cố gắng quên đi một người để tiếp tục sống, mà là học cách gìn giữ tình yêu ấy mà vẫn không bỏ quên chính cuộc đời mình.',
+  'Vì thế, hãy cứ yêu thương, cứ nhớ nhung và trân trọng những gì đã từng có. Đừng cảm thấy mình phải quên đi quá khứ mới có thể hướng về tương lai. Nhưng cũng hãy dành cho bản thân những niềm vui riêng, những điều muốn khám phá, những mục tiêu muốn theo đuổi và những mối quan hệ đáng trân trọng. Bởi yêu thương một người không có nghĩa là khép lại cả thế giới của mình. Ta có thể mang theo một tình yêu suốt cuộc đời, đồng thời vẫn sống trọn vẹn những ngày tháng còn lại. Để mỗi ngày trôi qua không chỉ là sự hoài niệm về những gì đã mất, mà còn là sự trân trọng những gì cuộc sống vẫn đang trao tặng.'
+]
     },
     {
       id: 'nhin-nhan-con-nguoi',
