@@ -508,18 +508,26 @@ html:not([data-mus="1"]) .rain, html:not([data-mus="1"]) .coverrain { display: n
 .birds, .gdash { stroke: var(--ink); }
 .m0 { stop-color: var(--mist); stop-opacity: 0; }
 .m1 { stop-color: var(--mist); stop-opacity: .95; }
-.cbob { animation: cbob 2.2s ease-in-out infinite; }
-.cleg { transform-box: fill-box; transform-origin: 50% 0%; }
-.cl1 { animation: cswA 2.2s ease-in-out infinite alternate; }
-.cl2 { animation: cswB 2.2s ease-in-out infinite alternate; }
-.carm { transform-box: fill-box; transform-origin: 50% 0%; animation: cswB 2.2s ease-in-out infinite alternate; }
-.carm.c2 { animation: cswA 2.2s ease-in-out infinite alternate; }
-.clantern { transform-box: fill-box; transform-origin: 50% 0%; animation: clswing 2.2s ease-in-out infinite alternate; }
+/* dáng đi: đùi xoay ở hông, cẳng chân gập ở gối, bàn chân xoay ở cổ chân; chân sau lệch nửa nhịp */
+.cbob { animation: wbob 2.4s linear infinite; }
+.wh, .wk, .wf, .wa, .wl { animation-duration: 2.4s; animation-iteration-count: infinite; animation-timing-function: ease-in-out; }
+.hN { transform-origin: 1px -50px; animation-name: whip; }
+.hF { transform-origin: 4px -50px; animation-name: whip; animation-delay: -1.2s; }
+.kN { transform-origin: -6px -29px; animation-name: wknee; }
+.kF { transform-origin: 8px -29px; animation-name: wknee; animation-delay: -1.2s; }
+.fN { transform-origin: -8px -6.5px; animation-name: wankle; }
+.fF { transform-origin: 14px -7.5px; animation-name: wankle; animation-delay: -1.2s; }
+.wN { transform-origin: -3px -76px; animation-name: warmN; }
+.wF { transform-origin: 3px -76px; animation-name: warmF; }
+.wl { transform-origin: -13.6px -47px; animation-name: wlant; }
 .clamp { animation: glow 4s ease-in-out infinite; }
-@keyframes cbob { 0%, 50%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-.7px); } }
-@keyframes cswA { from { transform: rotate(-4deg); } to { transform: rotate(4.5deg); } }
-@keyframes cswB { from { transform: rotate(4deg); } to { transform: rotate(-4.5deg); } }
-@keyframes clswing { from { transform: rotate(-2deg); } to { transform: rotate(2deg); } }
+@keyframes wbob { 0%, 50%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-1.5px); } }
+@keyframes whip { 0% { transform: rotate(11deg); animation-timing-function: linear; } 50% { transform: rotate(-10deg); } 100% { transform: rotate(11deg); } }
+@keyframes wknee { 0% { transform: rotate(-3deg); } 12% { transform: rotate(-10deg); } 40% { transform: rotate(-4deg); } 55% { transform: rotate(-28deg); } 72% { transform: rotate(-44deg); } 90% { transform: rotate(-14deg); } 100% { transform: rotate(-3deg); } }
+@keyframes wankle { 0% { transform: rotate(-3deg); } 15% { transform: rotate(-2deg); } 40% { transform: rotate(4deg); } 50% { transform: rotate(14deg); } 55% { transform: rotate(12deg); } 72% { transform: rotate(28deg); } 90% { transform: rotate(8deg); } 100% { transform: rotate(-3deg); } }
+@keyframes warmN { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(7deg); } }
+@keyframes warmF { 0%, 100% { transform: rotate(10deg); } 50% { transform: rotate(-9deg); } }
+@keyframes wlant { 0%, 100% { transform: rotate(3deg); } 50% { transform: rotate(-3deg); } }
 
 .nib svg { width: 100%; height: 100%; display: block; }
 
