@@ -1,9 +1,31 @@
 (function () {
   'use strict';
 
-  var B = window.BOOK, S = B.stories, ORDER = B.order, PARTS = B.parts;
+  var B = window.BOOK, ORDER = B.order, PARTS = B.parts;
+  /* truyện do admin sửa: dùng bản đã lưu ở lần mở trước (nếu có), bản trong sách là dự phòng */
+  function goodStories(l) {
+    return Array.isArray(l) && l.length > 0 && l.every(function (s) {
+      return s && s.id && s.title && ORDER.indexOf(s.part) >= 0 && Array.isArray(s.paras) && s.paras.length && s.proverb && s.proverb.text;
+    });
+  }
+  function byPart(l) {
+    return l.map(function (s, k) { return { s: s, k: k }; }).sort(function (a, b) {
+      return ORDER.indexOf(a.s.part) - ORDER.indexOf(b.s.part) || a.k - b.k;
+    }).map(function (o) { return o.s; });
+  }
+  try {
+    var cs = JSON.parse(localStorage.getItem('tkk-stories') || 'null');
+    if (goodStories(cs)) B.stories = byPart(cs);
+  } catch (e) {}
+  var S = B.stories;
   var X = window.CHIEM_NGHIEM || { sections: [] };
-  var R = X.sections || [];
+  var RBASE = X.sections || [], R = RBASE.slice();
+  function setRemote(list) {
+    var seen = {}, extra = [];
+    RBASE.forEach(function (x, k) { seen[rid(x, k)] = 1; });
+    (list || []).forEach(function (x) { if (x && x.id && x.title && Array.isArray(x.paras) && !seen[x.id]) { seen[x.id] = 1; extra.push(x); } });
+    R = RBASE.concat(extra);
+  }
   /* trang sách: 0 bìa, 1 mục lục, 2... các truyện, LAST trang cuối.
      Chiêm nghiệm và Ghi tâm là khu riêng, không nằm trong dòng lật trang. */
   var FIRST = 2, LAST = FIRST + S.length, TOTAL = LAST + 1;
@@ -11,7 +33,10 @@
   var ICO = {
     heart: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
     speak: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M16.5 9a4 4 0 0 1 0 6"/></svg>',
+    music: '<svg class="ic" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>',
     card:  '<svg class="ic" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
+    play:  '<svg class="ic i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+    pause: '<svg class="ic i-pause" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
     pen:   '<svg class="ic" viewBox="0 0 24 24"><path d="M3 21l3.6-.9L19.4 7.3a2.2 2.2 0 0 0-3.1-3.1L3.5 17z"/><path d="M14.5 6l3.5 3.5"/></svg>'
   };
 
@@ -22,6 +47,16 @@
   var prevB = document.getElementById('prev');
   var nextB = document.getElementById('next');
   var noteEl = document.getElementById('note');
+  var ac, gain, musOn = false, musVol = parseInt(get('tkk-mus') || '50', 10);
+  if (!(musVol >= 0 && musVol <= 100)) musVol = 50;
+  var MUS_URL = 'audio/nhac-nen.mp3';
+  var mus = new Audio(); mus.loop = true; mus.preload = 'none';
+  var SKINS = ['co', 'den', 'sang', 'toi'];
+  var SKIN_NAME = { co: 'Cổ', den: 'Đèn dầu', sang: 'Sáng', toi: 'Tối' };
+  var SKIN_BAR = { co: '#d9c08c', den: '#2c1d0f', sang: '#f4f2f8', toi: '#1b1730' };
+  var skin = get('tkk-skin');
+  if (skin === 'hien') skin = 'sang';
+  if (SKINS.indexOf(skin) < 0) skin = 'co';
   var i = 0, curStory = null, navPrev = null, navNext = null;
   var timers = [], deferred = null;
 
@@ -104,17 +139,17 @@
   /* ---------- header: dòng người và người đi ngược dòng ---------- */
   function rnd(seed) { return function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
   function crowd(n, y, s, seed) {
-    var r = rnd(seed), W = 1600, step = W / n, out = '';
+    var r = rnd(seed), W = 780, step = W / n, out = '';
     for (var k = 0; k < n; k++) {
-      var x = k * step + (r() - .5) * step * .55, sc = s * (.9 + r() * .24);
-      out += '<use href="#fig" transform="translate(' + x.toFixed(1) + ' ' + y + ') scale(' + sc.toFixed(2) + ')"/>';
+      var x = k * step + (r() - .5) * step * .55, sc = s * (.84 + r() * .3);
+      out += '<use href="#' + (r() < .4 ? 'pb' : 'pa') + '" transform="translate(' + x.toFixed(1) + ' ' + y + ') scale(' + sc.toFixed(2) + ')"/>';
     }
-    return '<g>' + out + '</g><g transform="translate(-1600 0)">' + out + '</g>';
+    return '<g>' + out + '</g><g transform="translate(-780 0)">' + out + '</g>';
   }
   function buildScene() {
     var far = document.getElementById('crowdFar'), near = document.getElementById('crowdNear');
-    if (far) far.innerHTML = crowd(24, 336, .62, 7);
-    if (near) near.innerHTML = crowd(13, 352, 1, 3);
+    if (far) far.innerHTML = crowd(12, 197, .5, 7);
+    if (near) near.innerHTML = crowd(7, 200, .78, 3);
   }
 
   /* ---------- chữ hiện ra như cây bút đang viết ---------- */
@@ -143,7 +178,8 @@
   }
 
   function penWrite(els, speed, done) {
-    var items = [], t = 0, over = false, raf = 0, t0 = 0, anims, run;
+    var items = [], t = 0, over = false, raf = 0, t0 = 0, anims, run, seed = 11;
+    function r() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
     var nib = document.createElement('i');
     els.forEach(function (el) {
       var text = el.textContent;
@@ -151,26 +187,47 @@
       el.classList.remove('pen-pending');
       el.innerHTML = text.split(' ').map(function (w) { return '<span class="w" aria-hidden="true">' + w + '</span>'; }).join(' ');
       [].forEach.call(el.querySelectorAll('.w'), function (sp) {
-        var d = Math.max(140, sp.textContent.length * speed);
+        var w = sp.textContent, d = Math.max(170, w.length * speed * (0.8 + r() * 0.5));
         items.push({ sp: sp, start: t, dur: d });
-        t += d;
+        t += d + 40 + r() * 90;                     /* nhấc bút giữa các từ */
+        if (/[,;:]$/.test(w)) t += 220;             /* dừng ở dấu phẩy */
+        else if (/[.!?…]$/.test(w)) t += 420;       /* dừng ở dấu chấm */
+        else if (r() < .08) t += 180;               /* thỉnh thoảng nghĩ một nhịp */
       });
       t += 380;
     });
     var total = t;
     nib.className = 'nib'; nib.setAttribute('aria-hidden', 'true');
-    nib.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M3 21l3.6-.9L19.4 7.3a2.2 2.2 0 0 0-3.1-3.1L3.5 17z" fill="var(--paper)" stroke="var(--ac)" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.5 6l3.5 3.5" stroke="var(--ac)" stroke-width="1.8"/></svg>';
+    nib.innerHTML = '<svg viewBox="0 0 46 46" width="46" height="46" overflow="visible"><g stroke-linejoin="round" stroke-linecap="round"><path d="M15 31 L12.4 25 L13.6 25.2 L13 19.6 L14.4 20 L15.6 14.8 L16.8 15.4 L20.4 10.6 L20.8 11.8 L22.6 14.2 L24 9 L25 9.8 L29 6.2 L29.3 7.4 L34 4.4 L34 5.6 L38.6 3 L44 2 C38 8.5 30 16.5 22 24 C19 27 17 29.2 15 31Z" fill="#f6eedb" stroke="#6b5230" stroke-width=".9"/><path d="M18 29.5 L20.6 33.2 L21 32.2 L25 34.6 L25 33.4 L30 33 L29.6 31.8 L34 28.6 L33.4 27.6 L37.6 22.4 L36.8 21.6 L40.4 14.6 L39.5 14 L43 6.4 L44 2 C38 10 28 20 18 29.5Z" fill="#e9dcbd" stroke="#6b5230" stroke-width=".9"/><path d="M20 27 L14.5 23 M23.4 23.4 L17 17.6 M26.8 19.6 L21.6 12.6 M30 16.2 L26.2 9 M33.4 12.6 L31 6.4 M22 28 L24.6 32.6 M26 24.4 L31.5 29.5 M29.6 20.6 L35 25 M33 16.6 L38 19.6 M37 12 L40.6 12.6" stroke="#b39a6c" stroke-width=".6" fill="none"/><path d="M4 42 C12 34 24 20 44 2" stroke="#5a4326" stroke-width="1.6" fill="none"/><path d="M2.2 44.4 L5 40.4 L7.2 42.6Z" fill="#2c1d0c" stroke="none"/></g></svg>';
     stage.appendChild(nib);
-    anims = items.map(function (it) {
-      return it.sp.animate(
-        [{ clipPath: 'inset(-25% 100% -25% -2%)' }, { clipPath: 'inset(-25% -6% -25% -2%)' }],
-        { duration: it.dur, delay: it.start, easing: 'linear', fill: 'both' });
+    var MASK = 'linear-gradient(103deg, #000 0, #000 58%, transparent 100%)';
+    anims = [];
+    try {
+    items.forEach(function (it) {
+      var st = it.sp.style;
+      st.webkitMaskImage = st.maskImage = MASK;
+      st.webkitMaskSize = st.maskSize = '300% 100%';
+      st.webkitMaskRepeat = st.maskRepeat = 'no-repeat';
+      var eff = { duration: it.dur, delay: it.start, easing: 'cubic-bezier(.35,.1,.5,1)', fill: 'both' };
+      anims.push(it.sp.animate(
+        [{ webkitMaskPosition: '100% 0', maskPosition: '100% 0' }, { webkitMaskPosition: '0% 0', maskPosition: '0% 0' }], eff));
+      anims.push(it.sp.animate(   /* mực còn ướt, đậm rồi nhạt dần */
+        [{ textShadow: '0 0 1.4px currentColor' }, { textShadow: '0 0 1.4px currentColor', offset: .4 }, { textShadow: '0 0 0 transparent' }],
+        { duration: it.dur + 650, delay: it.start, easing: 'linear', fill: 'both' }));
     });
+    } catch (err) {
+      anims.forEach(function (a) { try { a.cancel(); } catch (e) {} });
+      items.forEach(function (it) { it.sp.style.webkitMaskImage = it.sp.style.maskImage = ''; });
+      if (nib.parentNode) nib.parentNode.removeChild(nib);
+      if (done) done();
+      return;
+    }
     function finish() {
       if (over) return;
       over = true;
       cancelAnimationFrame(raf);
       anims.forEach(function (a) { try { a.cancel(); } catch (e) {} });
+      items.forEach(function (it) { it.sp.style.webkitMaskImage = it.sp.style.maskImage = ''; });
       if (nib.parentNode) nib.parentNode.removeChild(nib);
       var k = penRuns.indexOf(run); if (k >= 0) penRuns.splice(k, 1);
       els.forEach(function (el) { el.removeEventListener('click', skip); });
@@ -189,8 +246,9 @@
         if (e >= items[k].start && e <= items[k].start + items[k].dur) { cur = items[k]; break; }
       }
       if (cur) {
-        var r = cur.sp.getBoundingClientRect(), s = stage.getBoundingClientRect(), p = (e - cur.start) / cur.dur;
-        nib.style.transform = 'translate(' + (r.left - s.left + r.width * p - 3) + 'px,' + (r.bottom - s.top - 20) + 'px)';
+        var rc = cur.sp.getBoundingClientRect(), sg = stage.getBoundingClientRect(), p = (e - cur.start) / cur.dur;
+        var wob = Math.sin(e / 55) * rc.height * .07 + Math.sin(e / 23) * 1.2;
+        nib.style.transform = 'translate(' + (rc.left - sg.left + rc.width * p - 3.8) + 'px,' + (rc.top - sg.top + rc.height * .74 + wob - 54) + 'px) rotate(' + (Math.sin(e / 90) * 3 + Math.sin(e / 210) * 2 - 4) + 'deg)';
         nib.style.opacity = '1';
       } else nib.style.opacity = '0';
       raf = requestAnimationFrame(frame);
@@ -213,14 +271,32 @@
       els.forEach(function (el) { el.classList.remove('pen-pending'); });
       return;
     }
-    var left = els.length;
+    var left = els.length, started = [];
+    function begin(t) {
+      if (started.indexOf(t) >= 0) return;
+      started.push(t);
+      try { penIO.unobserve(t); } catch (e) {}
+      try { penWrite([t], 46, function () { if (--left === 0 && key) penDone(key); }); }
+      catch (err) { t.classList.remove('pen-pending'); if (--left === 0 && key) penDone(key); }
+    }
     penIO = new IntersectionObserver(function (ents) {
       ents.forEach(function (en) {
         if (!en.isIntersecting) return;
-        penIO.unobserve(en.target);
-        penWrite([en.target], 46, function () { if (--left === 0 && key) penDone(key); });
+        var vh = window.innerHeight || 700, hh = en.boundingClientRect.height;
+        /* đoạn dài hơn màn hình thì không bao giờ đủ 60%: cho viết khi đã thấy phần lớn màn hình */
+        if (en.intersectionRatio >= 0.6 || en.intersectionRect.height >= Math.min(hh * 0.6, vh * 0.45)) begin(en.target);
       });
-    }, { threshold: 0.6 });
+    }, { threshold: [0, 0.15, 0.3, 0.45, 0.6, 0.8, 1] });
+    /* chốt an toàn: chữ không bao giờ bị ẩn mãi */
+    var safe = setTimeout(function () {
+      els.forEach(function (el) {
+        if (started.indexOf(el) >= 0 || !el.classList.contains('pen-pending')) return;
+        var rc = el.getBoundingClientRect();
+        if (rc.bottom > 0 && rc.top < (window.innerHeight || 700)) begin(el);
+      });
+      setTimeout(function () { els.forEach(function (el) { if (started.indexOf(el) < 0) el.classList.remove('pen-pending'); }); }, 8000);
+    }, 2500);
+    penRuns.push({ stop: function () { clearTimeout(safe); } });
     els.forEach(function (el) { penIO.observe(el); });
   }
   function rewrite() {
@@ -238,6 +314,18 @@
     return ios ? 'Trên iPhone: bấm nút Chia sẻ của Safari, chọn "Thêm vào MH chính" để cài sách.' : '';
   }
 
+  function musRow() {
+    return '<div class="rain"><button class="rbtn" data-act="music" aria-pressed="' + musOn + '" aria-label="Bật hoặc tắt nhạc nền">' + ICO.music + '<span>Nhạc</span></button>' +
+      '<input class="rvol" type="range" min="0" max="100" step="5" value="' + musVol + '" aria-label="Âm lượng nhạc nền"></div>';
+  }
+  function listenBar(id) {
+    return '<div class="listen" data-id="' + id + '" role="group" aria-label="Nghe bài">' +
+      '<button class="lbtn" data-act="listen" aria-label="Nghe hoặc dừng bài này">' + ICO.play + ICO.pause + '</button>' +
+      '<div class="lmid"><div class="lt">Nghe bài này</div><div class="lbar"><i></i></div>' +
+      '<div class="lmeta"><span class="lsrc"></span><span class="ltime"></span></div></div>' + musRow() + '</div>' +
+      '<p class="voice-hint" role="status" hidden></p>';
+  }
+
   function cover() {
     var last = parseInt(get('tkk-page') || '0', 10);
     var resume = last >= FIRST && last <= LAST;
@@ -247,8 +335,11 @@
       '<blockquote class="epi hand"><p data-pen>Cuộc đời có lẽ không cần chúng ta phải hiểu hết mọi người, cũng không cần mọi người phải hiểu mình.</p><p data-pen>Điều quan trọng là hiểu đủ để không làm tổn thương người khác, tỉnh táo đủ để không đánh mất chính mình và khiêm nhường đủ để biết rằng mình vẫn còn nhiều điều phải học.</p></blockquote>' +
       '<div class="btns"><button class="btn" data-act="open">Mở sách</button>' +
       (resume ? '<button class="btn ghost" data-act="resume">Đọc tiếp trang ' + (last + 1) + '</button>' : '') +
+      '<button class="btn ghost" data-act="bookListen">' + ICO.speak + '<span data-bl>Nghe cả sách</span></button>' +
       '<button class="btn ghost" data-act="install" ' + (deferred ? '' : 'hidden') + '>Cài lên màn hình</button></div>' +
-      '<p class="foot">' + S.length + ' truyện · đọc được khi không có mạng' + (installHint() ? ' · ' + installHint() : '') + '</p>' +
+      '<div class="listen coverrain" role="group" aria-label="Nhạc nền">' + musRow() + '</div>' +
+      '<div class="cover-foot"><p class="foot">' + S.length + ' truyện · đọc được khi không có mạng' + (installHint() ? ' · ' + installHint() : '') + '</p>' +
+      '<div class="seal" aria-hidden="true"><span>Từng</span><span>Khoảnh</span><span>Khắc</span></div></div>' +
       '</article>';
   }
 
@@ -277,11 +368,11 @@
       '<section class="today"><span class="t-lab">Phương ngôn hôm nay</span><q>' + d.proverb.text + '</q><span class="by">' + by(d.proverb) + '</span>' +
       '<div class="btns"><button class="chip" data-act="goto" data-n="' + (dayPick() + FIRST) + '">Đọc truyện “' + d.title + '”</button></div></section>' +
       '<div class="dual">' +
-     '<button class="dcard" data-act="refl"><b>Chiêm nghiệm</b>' +
-  '<span class="dq">Khi những điều ta từng tin không còn đứng vững trước thực tế.</span>' +
-  '<span class="dv">Trải qua một cuộc bể dâu,<br>Những điều trông thấy mà đau đớn lòng.</span>' +
-  '<em>Những điều chiêm nghiệm về cuộc đời</em><small>' + R.length + ' điều chung, và chỗ để bạn tự viết</small></button>' +
-      '<button class="dcard" data-act="tam"><b>Ghi tâm</b><em>Điều bạn giữ lại và tự viết</em><small>' + (tam.saved.length + tam.own.length) + ' mục</small></button>' +
+      '<button class="dcard" data-act="bookListen"><b>Nghe</b><em data-bl>Nghe cả sách</em><small>Phát liên tục từ truyện đầu đến truyện cuối, tự sang trang</small></button>' +
+      '<button class="dcard" data-act="refl"><b>Chiêm nghiệm</b>' +
+        '<span class="dq">Khi những điều ta từng tin không còn đứng vững trước thực tế.</span>' +
+        '<span class="dv">Trải qua một cuộc bể dâu,<br>Những điều trông thấy mà đau đớn lòng.</span>' +
+        '<em>Những điều chiêm nghiệm về cuộc đời</em><small>' + R.length + ' điều chung, và chỗ để bạn tự viết</small></button>' +
       '</div>' +
       '<button class="now" data-act="goto" data-n="' + (ci + FIRST) + '"><span class="now-t">Bây giờ ' + hhmm() + '</span><span class="now-n">Truyện hợp giờ này: “' + S[ci].title + '”</span></button>' +
       parts + penPrefHtml() + '</article>';
@@ -292,21 +383,20 @@
     return '<article class="page story">' +
       '<p class="kick">' + p.name + ' · ' + p.time + (s.kind === 'real' ? ' · Chuyện có thật' : '') + '</p>' +
       '<h1 class="h-story">' + s.title + '</h1>' +
+      listenBar(s.id) +
       '<div class="prose">' + s.paras.map(function (t) { return '<p>' + t + '</p>'; }).join('') + '</div>' +
       origin(s) +
       '<figure class="proverb"><figcaption>Phương ngôn</figcaption><blockquote class="hand" data-pen>' + s.proverb.text + '</blockquote><p class="by">' + by(s.proverb) + '</p>' +
       '<button class="chip pen-btn" data-act="rewrite">' + ICO.pen + '<span>Viết lại</span></button></figure>' +
-      '<section class="task"><h2>Việc nhỏ cho hôm nay</h2><p>' + s.task + '</p>' +
+      (s.task ? '<section class="task"><h2>Việc nhỏ cho hôm nay</h2><p>' + s.task + '</p>' +
       '<div class="t-bar"><i></i></div><p class="t-out" role="status"></p>' +
-      '<button class="btn ghost" data-act="task">Bắt đầu 1 phút</button></section>' +
+      '<button class="btn ghost" data-act="task">Bắt đầu 1 phút</button></section>' : '') +
       '<section class="pause"><button class="btn ghost" data-act="breath">Dừng lại một nhịp</button>' +
       '<p class="hint">10 giây hít thở trước khi sang trang.</p></section>' +
       '<div class="acts">' +
       '<button class="chip" data-act="save" data-ref="s:' + s.id + '" aria-pressed="' + on + '">' + ICO.heart + '<span>' + (on ? 'Đã ghi tâm' : 'Ghi tâm') + '</span></button>' +
-      '<button class="chip" data-act="speak">' + ICO.speak + '<span>Đọc to</span></button>' +
       '<button class="chip" data-act="card">' + ICO.card + '<span>Tạo thẻ phương ngôn</span></button>' +
       '</div>' +
-      '<p class="voice-hint" id="voiceHint" role="status" hidden></p>' +
       '</article>';
   }
 
@@ -315,9 +405,9 @@
       '<p class="kick">Hết một ngày</p>' +
       '<h1 class="h-story">Bạn vừa đi trọn một ngày bằng đúng nhịp của mình</h1>' +
       '<p class="lead hand" data-pen>Ngày mai là một trang mới, và bạn đã sẵn sàng.</p>' +
-      '<section><h2 class="h2">Đã ghi tâm</h2>' + savedHtml(false) + '</section>' +
+      '<section><h2 class="h2">Đã ghi tâm</h2>' + savedHtml(true) + '</section>' +
       '<p class="care">Hôm nào thấy mệt, cứ làm chậm lại một chút. Nhắn cho một người bạn hay gọi về nhà cũng là một việc đáng làm.</p>' +
-      '<div class="btns"><button class="btn" data-act="refl">Đọc những điều chiêm nghiệm</button><button class="btn ghost" data-act="goto" data-n="' + FIRST + '">Đọc lại từ đầu</button><button class="btn ghost" data-act="tam">Mở Ghi tâm</button></div>' +
+      '<div class="btns"><button class="btn" data-act="refl">Đọc những điều chiêm nghiệm</button><button class="btn ghost" data-act="goto" data-n="' + FIRST + '">Đọc lại từ đầu</button></div>' +
       '<p class="src">Các câu trích từ kinh điển (Phật giáo, Nho gia, Lão Tử, khắc kỷ) được diễn đạt lại bằng tiếng Việt hiện đại, ghi “(ý)” khi không phải bản dịch từng chữ. Truyện có nhãn “Chuyện có thật” được kể lại từ báo chí bằng lời của sách, kèm nguồn ở cuối truyện; các truyện còn lại là sáng tác.</p>' +
       '</article>';
   }
@@ -339,25 +429,33 @@
   /* hiện một trang vào khung đọc, dùng chung cho sách, Chiêm nghiệm và Ghi tâm */
   function mount(html, o) {
     clearAll(); penStop();
-    try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+    if (!keepPlay) stopPlay();
     var y = window.scrollY;
     root.setAttribute('data-part', o.part);
+    setMenu(o.menu || 'read');
     document.body.classList.toggle('reading', !o.cover);
     stage.innerHTML = html;
     if (!o.keep && stage.firstElementChild) stage.firstElementChild.classList.add('turn-' + (o.dir || 'next'));
     setupPen(o.penKey, !!o.penAlways);
     drawStrip(o.cur);
+    stripEl.hidden = o.menu === 'refl';
     posEl.textContent = o.pos;
     navPrev = o.prev || null; navNext = o.next || null;
     prevB.style.visibility = navPrev ? 'visible' : 'hidden';
     nextB.style.visibility = navNext ? 'visible' : 'hidden';
+    syncListen();
     window.scrollTo(0, o.keep ? y : 0);
+  }
+  function setMenu(m) {
+    var a = document.getElementById('mRead'), b = document.getElementById('mRefl');
+    if (m === 'refl') { b.setAttribute('aria-current', 'page'); a.removeAttribute('aria-current'); }
+    else { a.setAttribute('aria-current', 'page'); b.removeAttribute('aria-current'); }
   }
 
   function go(n, dir) {
     n = Math.max(0, Math.min(LAST, n));
     dir = dir || (n >= i ? 'next' : 'prev');
-    i = n; put('tkk-page', String(i));
+    i = n; view = 'book'; put('tkk-page', String(i));
     var s = (i >= FIRST && i < LAST) ? S[i - FIRST] : null;
     curStory = s;
     mount(pageHtml(i), {
@@ -372,96 +470,81 @@
     });
   }
 
-  /* ---------- khu Chiêm nghiệm ---------- */
-  function showReflList(dir) {
-    curStory = null;
+  /* ---------- khu Chiêm nghiệm: Chung (admin thêm) và Của bạn (tự viết) ---------- */
+  var reflTab = 'common';
+  function commonHtml() {
     var c = X.closing, sp = X.spirit || [];
-    var html = '<article class="page refl">' +
-      '<p class="kick">Chiêm nghiệm</p>' +
-      '<h1 class="h-story">Những điều chiêm nghiệm về cuộc đời</h1>' +
-      '<p class="lead">Đọc chậm, từng điều một. Điều nào chạm vào bạn, hãy ghi tâm.</p>' +
+    return '<p class="lead">Đọc chậm, từng điều một. Điều nào chạm vào bạn, hãy ghi tâm.</p>' +
       '<ol class="toc-list refl-list">' + R.map(function (s, k) {
         return '<li><button data-act="reflOpen" data-k="' + k + '"><em>' + esc(s.title) + '</em><span class="tk">' + (isSaved('r:' + rid(s, k)) ? ICO.heart : '') + '</span></button></li>';
       }).join('') + '</ol>' +
       (c ? '<figure class="proverb"><figcaption>' + esc(c.label) + '</figcaption><blockquote class="hand" data-pen>' + esc(c.text) + '</blockquote><p class="by">' + esc(c.by) + '</p>' +
         '<button class="chip pen-btn" data-act="rewrite">' + ICO.pen + '<span>Viết lại</span></button></figure>' : '') +
-      (sp.length ? '<ul class="spirit">' + sp.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '') +
-      '<p class="src">Muốn viết điều chiêm nghiệm của riêng mình? Hãy mở Ghi tâm.</p>' +
-      '<div class="btns"><button class="btn ghost" data-act="tam">Mở Ghi tâm</button><button class="btn ghost" data-act="toc">Về mục lục</button></div>' +
+      (sp.length ? '<ul class="spirit">' + sp.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '');
+  }
+  function ownHtml() {
+    var own = tam.own.map(function (e) {
+      return '<li class="entry"><p>' + esc(e.text).replace(/\n/g, '<br>') + '</p><div class="entry-foot"><span>' + new Date(e.ts).toLocaleDateString('vi-VN') + '</span>' +
+        '<button class="mini" data-act="tamDel" data-id="' + e.id + '">Xóa</button></div></li>';
+    }).join('');
+    return '<p class="kick own-tag">Tự chiêm nghiệm · chỉ mình bạn thấy</p>' +
+      '<section class="tam-form"><label class="h2" for="tamText">Hôm nay bạn nghiệm ra điều gì?</label>' +
+      '<textarea id="tamText" rows="4" maxlength="800" placeholder="Một câu thôi cũng được…"></textarea>' +
+      '<div class="btns"><button class="btn" data-act="tamAdd">Ghi lại</button></div></section>' +
+      (own ? '<ul class="entries">' + own + '</ul>' : '<p class="empty">Chưa có điều nào. Hãy viết điều bạn nghĩ ở khung phía trên.</p>') +
+      (tam.own.length ? '<div class="btns"><button class="btn ghost" data-act="tamCopy">Sao chép tất cả</button></div>' : '') +
+      '<p class="src">Những điều bạn tự viết chỉ lưu trên thiết bị này. Xóa dữ liệu trình duyệt hoặc đổi máy thì sẽ mất, nên hãy sao chép một bản để giữ.</p>';
+  }
+  function showReflList(dir, tab, keep) {
+    curStory = null; view = 'refl';
+    if (tab) reflTab = tab;
+    var html = '<article class="page refl">' +
+      '<p class="kick">Chiêm nghiệm</p>' +
+      '<h1 class="h-story">Những điều chiêm nghiệm về cuộc đời</h1>' +
+      '<p class="lead">Khi ta nhận ra những điều mình từng ngộ nhận</p>' +
+      '<div class="pills" role="tablist" aria-label="Loại chiêm nghiệm">' +
+      '<button class="pill" role="tab" data-act="reflTab" data-tab="common" aria-selected="' + (reflTab === 'common') + '">Chung</button>' +
+      '<button class="pill" role="tab" data-act="reflTab" data-tab="own" aria-selected="' + (reflTab === 'own') + '">Của bạn</button></div>' +
+      (reflTab === 'common' ? commonHtml() : ownHtml()) +
       '</article>';
-    view = 'refl';
     mount(html, {
-      part: 'night', cur: -1, dir: dir || 'next', pos: 'Chiêm nghiệm',
-      prev: function () { go(1, 'prev'); },
-      next: R.length ? function () { showRefl(0, 'next'); } : null,
+      menu: 'refl', part: 'night', cur: -1, dir: dir || 'next', keep: !!keep, pos: 'Chiêm nghiệm',
+      prev: function () { view = 'book'; go(i, 'prev'); },
+      next: (reflTab === 'common' && R.length) ? function () { showRefl(0, 'next'); } : null,
       penKey: 'refl-list'
     });
   }
 
   function showRefl(k, dir) {
-    var s = R[k]; if (!s) { showReflList(dir); return; }
+    var s = R[k]; if (!s) { showReflList(dir, 'common'); return; }
     var ref = 'r:' + rid(s, k), on = isSaved(ref);
     curStory = null; view = 'refl';
     var html = '<article class="page refl">' +
       '<p class="kick">Chiêm nghiệm · ' + (k + 1) + ' trong ' + R.length + '</p>' +
       '<h1 class="h-story">' + esc(s.title) + '</h1>' +
+      listenBar('r-' + rid(s, k)) +
       '<div class="refl-body">' + s.paras.map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('') + '</div>' +
       '<div class="acts"><button class="chip" data-act="save" data-ref="' + ref + '" aria-pressed="' + on + '">' + ICO.heart + '<span>' + (on ? 'Đã ghi tâm' : 'Ghi tâm') + '</span></button></div>' +
       '</article>';
     mount(html, {
-      part: 'night', cur: -1, dir: dir || 'next', pos: 'Chiêm nghiệm ' + (k + 1) + ' / ' + R.length,
-      prev: function () { if (k > 0) showRefl(k - 1, 'prev'); else showReflList('prev'); },
-      next: function () { if (k < R.length - 1) showRefl(k + 1, 'next'); else showReflList('next'); }
+      menu: 'refl', part: 'night', cur: -1, dir: dir || 'next', pos: 'Chiêm nghiệm ' + (k + 1) + ' / ' + R.length,
+      prev: function () { if (k > 0) showRefl(k - 1, 'prev'); else showReflList('prev', 'common'); },
+      next: function () { if (k < R.length - 1) showRefl(k + 1, 'next'); else showReflList('next', 'common'); }
     });
   }
 
-  /* ---------- khu Ghi tâm ---------- */
-  function showTam(keep) {
-    curStory = null; view = 'tam';
-    var own = tam.own.map(function (e) {
-      return '<li class="entry"><p>' + esc(e.text).replace(/\n/g, '<br>') + '</p><div class="entry-foot"><span>' + new Date(e.ts).toLocaleDateString('vi-VN') + '</span>' +
-        '<button class="mini" data-act="tamDel" data-id="' + e.id + '">Xóa</button></div></li>';
-    }).join('');
-    var html = '<article class="page tam">' +
-      '<p class="kick">Ghi tâm</p>' +
-      '<h1 class="h-story">Những điều bạn giữ trong lòng</h1>' +
-      '<p class="lead">Viết xuống điều bạn nghiệm ra hôm nay, hoặc giữ lại những trang đã chạm vào bạn.</p>' +
-      '<section class="tam-form"><label class="h2" for="tamText">Điều bạn chiêm nghiệm hôm nay</label>' +
-      '<textarea id="tamText" rows="4" maxlength="800" placeholder="Một câu thôi cũng được…"></textarea>' +
-      '<div class="btns"><button class="btn" data-act="tamAdd">Ghi tâm</button></div></section>' +
-      '<section><h2 class="h2">Điều của riêng bạn</h2>' +
-      (own ? '<ul class="entries">' + own + '</ul>' : '<p class="empty">Chưa có điều nào. Điều bạn viết ở trên sẽ nằm ở đây.</p>') + '</section>' +
-      '<section><h2 class="h2">Đã ghi tâm</h2>' + savedHtml(true) + '</section>' +
-      '<div class="btns"><button class="btn ghost" data-act="tamCopy">Sao chép tất cả</button><button class="btn ghost" data-act="toc">Về mục lục</button></div>' +
-      '<p class="src">Mọi thứ ở đây chỉ lưu trên thiết bị này. Xóa dữ liệu trình duyệt hoặc đổi máy thì sẽ mất, nên hãy bấm “Sao chép tất cả” để giữ một bản.</p>' +
-      '</article>';
-    mount(html, {
-      part: 'night', cur: -1, keep: !!keep, pos: 'Ghi tâm',
-      prev: function () { go(1, 'prev'); }, next: null
-    });
-  }
   function tamAdd() {
     var ta = document.getElementById('tamText');
     var text = ta ? ta.value.trim() : '';
     if (!text) { note('Hãy viết vài chữ trước nhé'); return; }
     tam.own.unshift({ id: Date.now().toString(36), text: text, ts: Date.now() });
     saveTam();
-    showTam(true);
-    note('Đã ghi tâm');
+    showReflList(null, 'own', true);
+    note('Đã ghi lại');
   }
   function tamCopy() {
-    var lines = [];
-    if (tam.own.length) {
-      lines.push('ĐIỀU CỦA RIÊNG TÔI');
-      tam.own.forEach(function (e) { lines.push('- ' + e.text + ' (' + new Date(e.ts).toLocaleDateString('vi-VN') + ')'); });
-    }
-    var sv = tam.saved.map(refInfo).filter(Boolean);
-    if (sv.length) {
-      lines.push('', 'ĐÃ GHI TÂM');
-      sv.forEach(function (x) { lines.push('- ' + x.title + ' (' + x.kind + ')'); });
-    }
-    if (!lines.length) { note('Chưa có gì để sao chép'); return; }
-    var txt = lines.join('\n');
+    if (!tam.own.length) { note('Chưa có gì để sao chép'); return; }
+    var txt = tam.own.map(function (e) { return '- ' + e.text + ' (' + new Date(e.ts).toLocaleDateString('vi-VN') + ')'; }).join('\n');
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(txt).then(function () { note('Đã sao chép'); }, function () { note('Không sao chép được. Hãy chép tay từng mục.'); });
     } else note('Không sao chép được. Hãy chép tay từng mục.');
@@ -503,11 +586,56 @@
   }
 
   /* đọc to: chỉ dùng giọng tiếng Việt có sẵn trên thiết bị, nếu không có thì hướng dẫn cách cài */
+  /* ---------- nghe: file thu âm của admin, hoặc giọng máy tiếng Việt nếu bài chưa có thu ---------- */
   var VOICE_MSG = 'Trình duyệt này chưa có giọng đọc tiếng Việt. Bạn có thể mở sách bằng Microsoft Edge, hoặc cài giọng Việt: trên Windows vào Cài đặt, Thời gian và ngôn ngữ, Giọng nói, rồi Thêm giọng; trên Android cài Google Text-to-speech và tải giọng Tiếng Việt.';
+  var AUD = {};                         /* id bài -> mốc tải lên của file thu */
+  var aud = new Audio(); aud.preload = 'none';
+  var play = { id: null, playing: false, tts: false, book: false, prog: 0 };
+  var keepPlay = false, ttsRun = 0;
+
+  function textOf(id) {
+    var s = /^s\d+$/.test(id) ? byId(id) : null;
+    if (s) return { chunks: [s.title].concat(s.paras, [s.proverb.text]) };
+    for (var k = 0; k < R.length; k++) if ('r-' + rid(R[k], k) === id) return { chunks: [R[k].title].concat(R[k].paras) };
+    return null;
+  }
+  function fmt(t) { if (!isFinite(t)) return ''; return Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0'); }
   function showVoiceHint(msg) {
-    var el = document.getElementById('voiceHint');
+    var el = stage.querySelector('.voice-hint');
     if (!el) { note('Chưa đọc to được trên thiết bị này'); return; }
     el.textContent = msg || VOICE_MSG; el.hidden = false;
+  }
+  function syncListen() {
+    [].forEach.call(stage.querySelectorAll('.listen[data-id]'), function (el) {
+      var id = el.getAttribute('data-id'), me = play.id === id, on = me && play.playing, pct = 0, t = '';
+      if (me) {
+        if (play.tts) pct = play.prog * 100;
+        else if (aud.duration) { pct = aud.currentTime / aud.duration * 100; t = fmt(aud.currentTime) + ' / ' + fmt(aud.duration); }
+      }
+      el.classList.toggle('on', on);
+      el.querySelector('.lsrc').textContent = AUD[id] ? 'Giọng người đọc' : 'Giọng máy';
+      el.querySelector('.lbar i').style.width = pct + '%';
+      el.querySelector('.ltime').textContent = t;
+      el.querySelector('.lt').textContent = on ? 'Đang nghe' : (me && !play.tts && aud.currentTime > 0 ? 'Tạm dừng' : 'Nghe bài này');
+    });
+    [].forEach.call(document.querySelectorAll('[data-bl]'), function (b) { b.textContent = play.book ? 'Dừng nghe' : 'Nghe cả sách'; });
+    musDuck();
+  }
+  aud.addEventListener('timeupdate', syncListen);
+  aud.addEventListener('loadedmetadata', syncListen);
+
+  function stopCore() {
+    ttsRun++;
+    play.playing = false; play.tts = false; play.prog = 0;
+    aud.onended = null; aud.onerror = null;
+    try { aud.pause(); } catch (e) {}
+    try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+  }
+  function stopPlay() {
+    stopCore();
+    play.id = null; play.book = false;
+    try { aud.currentTime = 0; } catch (e) {}
+    syncListen();
   }
   function withVoices(cb) {
     var ss = window.speechSynthesis, v = ss.getVoices();
@@ -522,60 +650,130 @@
     try { ss.addEventListener('voiceschanged', fin); } catch (e) {}
     setTimeout(fin, 1200);
   }
-  function speak() {
+  function giveUp(msg) {
+    play.playing = false; play.id = null; play.book = false;
+    showVoiceHint(msg); syncListen();
+  }
+  function startTTS(id, it, onEnd) {
     var ss = window.speechSynthesis;
-    if (!ss || !window.SpeechSynthesisUtterance) { showVoiceHint('Trình duyệt này không hỗ trợ đọc to. Bạn thử mở sách bằng Microsoft Edge hoặc Chrome mới nhất.'); return; }
-    if (ss.speaking) { ss.cancel(); return; }
-    var s = curStory; if (!s) return;
+    if (!ss || !window.SpeechSynthesisUtterance) { giveUp('Trình duyệt này không hỗ trợ đọc to. Bạn thử mở sách bằng Microsoft Edge hoặc Chrome mới nhất.'); return; }
+    var run = ++ttsRun;
+    play.tts = true; play.prog = 0;
     withVoices(function (vs) {
+      if (run !== ttsRun) return;
       var vi = vs.filter(function (v) { return /^vi([-_]|$)/i.test(v.lang); });
-      if (!vi.length) { showVoiceHint(); return; }
+      if (!vi.length) { giveUp(); return; }
       vi.sort(function (a, b) { return (/natural|online/i.test(b.name) ? 1 : 0) - (/natural|online/i.test(a.name) ? 1 : 0); });
-      var el = document.getElementById('voiceHint'); if (el) el.hidden = true;
+      var hint = stage.querySelector('.voice-hint'); if (hint) hint.hidden = true;
+      var n = it.chunks.length;
       try {
-        [s.title].concat(s.paras, [s.proverb.text]).forEach(function (t) {   /* chia đoạn để Chrome không tự dừng giữa chừng */
+        it.chunks.forEach(function (t, k) {      /* chia đoạn để Chrome không tự dừng giữa chừng */
           var u = new SpeechSynthesisUtterance(t);
           u.lang = vi[0].lang; u.voice = vi[0]; u.rate = .92;
-          u.onerror = function (e) { if (e.error === 'language-unavailable' || e.error === 'voice-unavailable') showVoiceHint(); };
+          u.onstart = function () { if (run === ttsRun) { play.prog = k / n; syncListen(); } };
+          u.onerror = function (e) {
+            if (run !== ttsRun) return;
+            if (e.error === 'language-unavailable' || e.error === 'voice-unavailable') giveUp();
+          };
+          if (k === n - 1) u.onend = function () { if (run !== ttsRun) return; play.playing = false; play.prog = 1; syncListen(); if (onEnd) onEnd(); };
           ss.speak(u);
         });
-      } catch (e) { showVoiceHint(); }
+      } catch (e) { giveUp(); }
     });
   }
+  function startItem(id, onEnd) {
+    var it = textOf(id); if (!it) return;
+    stopCore();
+    play.id = id; play.playing = true;
+    if (AUD[id]) {
+      aud.src = 'api/audio/' + id + '?v=' + AUD[id];
+      aud.onended = function () { play.playing = false; syncListen(); if (onEnd) onEnd(); };
+      aud.onerror = function () { delete AUD[id]; if (play.id === id) { aud.onerror = null; startTTS(id, it, onEnd); syncListen(); } };
+      var pr = aud.play();
+      if (pr && pr.catch) pr.catch(function (err) {
+        if (err && err.name === 'NotAllowedError') { play.playing = false; syncListen(); note('Chạm nút nghe một lần nữa để phát'); }
+      });
+    } else startTTS(id, it, onEnd);
+    syncListen();
+  }
+  function toggleListen(bar) {
+    var id = bar.getAttribute('data-id');
+    if (play.id === id && play.playing) {
+      if (!play.tts) { aud.pause(); play.playing = false; syncListen(); } else stopPlay();
+      return;
+    }
+    if (play.id === id && !play.tts && aud.currentTime > 0 && !aud.ended) { aud.play(); play.playing = true; syncListen(); return; }
+    play.book = false;
+    startItem(id, null);
+  }
+  function bookListen() {
+    if (play.book) { stopPlay(); return; }
+    stopPlay();
+    var n = (view === 'book' && i >= FIRST && i < LAST) ? i : FIRST;
+    if (n !== i || view !== 'book') { keepPlay = true; go(n, 'next'); keepPlay = false; }
+    play.book = true;
+    startItem(S[n - FIRST].id, bookNext);
+  }
+  function bookNext() {
+    if (!play.book) return;
+    keepPlay = true;
+    if (i + 1 < LAST) { go(i + 1, 'next'); keepPlay = false; startItem(S[i - FIRST].id, bookNext); }
+    else { play.book = false; go(LAST, 'next'); keepPlay = false; play.playing = false; syncListen(); }
+  }
 
-  var ac, gain, rainOn = false;
-  function toggleRain() {
+  function musSync() {
+    [].forEach.call(document.querySelectorAll('.rbtn'), function (b) { b.setAttribute('aria-pressed', String(musOn)); });
+    [].forEach.call(document.querySelectorAll('.rvol'), function (r) { r.value = musVol; });
+  }
+  /* nhạc nhỏ xuống khi đang nghe giọng đọc, để không át lời */
+  function musGain() { return musOn ? musVol / 100 * 0.9 * (play && play.playing ? 0.35 : 1) : 0; }
+  function musDuck() { if (gain && ac) gain.gain.setTargetAtTime(musGain(), ac.currentTime, 0.4); }
+  function toggleMusic(forceOn) {
     try {
       if (!ac) {
         ac = new (window.AudioContext || window.webkitAudioContext)();
-        var len = ac.sampleRate * 2, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
-        for (var k = 0; k < len; k++) d[k] = Math.random() * 2 - 1;
-        var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
-        var hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 500;
-        var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3500;
+        mus.src = MUS_URL;
+        var node = ac.createMediaElementSource(mus);
         gain = ac.createGain(); gain.gain.value = 0;
-        src.connect(hp); hp.connect(lp); lp.connect(gain); gain.connect(ac.destination);
-        src.start();
+        node.connect(gain); gain.connect(ac.destination);
       }
       if (ac.state === 'suspended') ac.resume();
-      rainOn = !rainOn;
-      gain.gain.setTargetAtTime(rainOn ? 0.09 : 0, ac.currentTime, 0.4);
-      document.getElementById('rainB').setAttribute('aria-pressed', String(rainOn));
-      note(rainOn ? 'Tiếng mưa: bật' : 'Tiếng mưa: tắt');
+      musOn = forceOn === true ? true : !musOn;
+      if (musOn) {
+        var pr = mus.play();
+        if (pr && pr.catch) pr.catch(function () { musOn = false; musSync(); note('Chưa phát được nhạc nền'); });
+      } else {
+        setTimeout(function () { if (!musOn) mus.pause(); }, 1600);
+      }
+      gain.gain.setTargetAtTime(musGain(), ac.currentTime, 0.4);
+      musSync();
     } catch (e) { note('Thiết bị này chưa phát được âm thanh'); }
   }
+  document.addEventListener('input', function (e) {
+    if (!e.target.classList || !e.target.classList.contains('rvol')) return;
+    musVol = +e.target.value; put('tkk-mus', String(musVol));
+    if (musVol > 0 && !musOn) toggleMusic(true);
+    else musDuck();
+    musSync();
+  });
+  /* chỉ hiện nút nhạc khi đã có file nhạc trong thư mục audio */
+  fetch(MUS_URL, { method: 'HEAD' }).then(function (r) {
+    if (r.ok && /audio|mpeg|octet/.test(r.headers.get('content-type') || '')) document.documentElement.setAttribute('data-mus', '1');
+  }).catch(function () {});
 
-  var THEMES = ['auto', 'light', 'dark'];
-  var THEME_NAME = { auto: 'theo thiết bị', light: 'sáng', dark: 'tối' };
-  var theme = get('tkk-theme');
-  if (THEMES.indexOf(theme) < 0) theme = 'auto';
-  if (theme !== 'auto') root.setAttribute('data-theme', theme);
-  function cycleTheme() {
-    theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
-    if (theme === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', theme);
-    put('tkk-theme', theme);
-    note('Giao diện: ' + THEME_NAME[theme]);
+  function closeSkin() {
+    var pp = document.getElementById('skinpop'), sb = document.getElementById('skinB');
+    if (pp) pp.hidden = true; if (sb) sb.setAttribute('aria-expanded', 'false');
   }
+  function applySkin() {
+    root.setAttribute('data-skin', skin);
+    if (skin === 'sang' || skin === 'toi') root.setAttribute('data-theme', skin === 'toi' ? 'dark' : 'light'); else root.removeAttribute('data-theme');
+    var pop = document.getElementById('skinpop');
+    if (pop) pop.innerHTML = SKINS.map(function (k) { return '<button class="sk" data-act="skin" data-v="' + k + '" aria-pressed="' + (skin === k) + '">' + SKIN_NAME[k] + '</button>'; }).join('');
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute('content', SKIN_BAR[skin]);
+  }
+  applySkin();
 
   function toggleSave(b) {
     var ref = b.getAttribute('data-ref'), on = toggleRef(ref);
@@ -664,6 +862,7 @@
   var view = 'book';
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-act]');
+    if (!e.target.closest('#skinpop') && !(b && b.getAttribute('data-act') === 'skinMenu')) closeSkin();
     if (!b) return;
     var a = b.getAttribute('data-act');
     if (a === 'open') go(1);
@@ -672,9 +871,10 @@
     else if (a === 'next') { if (navNext) navNext(); }
     else if (a === 'prev') { if (navPrev) navPrev(); }
     else if (a === 'toc') { view = 'book'; go(1); }
-    else if (a === 'refl') showReflList();
+    else if (a === 'refl' || a === 'menuRefl') showReflList('next');
+    else if (a === 'menuRead') { view = 'book'; go(i, 'prev'); }
+    else if (a === 'reflTab') showReflList(null, b.getAttribute('data-tab'), true);
     else if (a === 'reflOpen') showRefl(parseInt(b.getAttribute('data-k'), 10));
-    else if (a === 'tam') showTam();
     else if (a === 'tamAdd') tamAdd();
     else if (a === 'tamCopy') tamCopy();
     else if (a === 'tamDel') {
@@ -684,14 +884,22 @@
       } else {
         var id = b.getAttribute('data-id');
         tam.own = tam.own.filter(function (x) { return x.id !== id; });
-        saveTam(); showTam(true);
+        saveTam(); showReflList(null, 'own', true);
       }
     }
-    else if (a === 'unsave') { toggleRef(b.getAttribute('data-ref')); showTam(true); }
+    else if (a === 'unsave') {
+      toggleRef(b.getAttribute('data-ref'));
+      var li = b.closest('li'), ul = li && li.parentNode;
+      if (li) li.remove();
+      if (ul && !ul.children.length) ul.outerHTML = savedHtml(true);
+    }
     else if (a === 'task') startTask(b);
     else if (a === 'breath') startBreath(b);
     else if (a === 'save') toggleSave(b);
-    else if (a === 'speak') speak();
+    else if (a === 'listen') toggleListen(b.closest('.listen'));
+    else if (a === 'bookListen') bookListen();
+    else if (a === 'skin') { skin = b.getAttribute('data-v'); put('tkk-skin', skin); applySkin(); closeSkin(); note('Giao diện: ' + SKIN_NAME[skin]); }
+    else if (a === 'skinMenu') { var pp = document.getElementById('skinpop'); pp.hidden = !pp.hidden; b.setAttribute('aria-expanded', String(!pp.hidden)); }
     else if (a === 'rewrite') rewrite();
     else if (a === 'penpref') {
       penPref = b.getAttribute('data-v'); put('tkk-pen', penPref);
@@ -702,8 +910,7 @@
     else if (a === 'shShare') shareCard();
     else if (a === 'shSave') saveCard();
     else if (a === 'shClose') document.getElementById('sheet').hidden = true;
-    else if (a === 'rain') toggleRain();
-    else if (a === 'theme') cycleTheme();
+    else if (a === 'music') toggleMusic();
     else if (a === 'reload') location.reload();
     else if (a === 'install' && deferred) {
       deferred.prompt();
@@ -734,7 +941,32 @@
 
   /* ---------- khởi động ---------- */
   buildScene();
+  function loadJson(u, cb) {
+    fetch(u, { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d) cb(d); }).catch(function () {});
+  }
+  try { var c1 = JSON.parse(get('tkk-aud') || 'null'); if (c1 && typeof c1 === 'object') AUD = c1; } catch (e) {}
+  try { var c2 = JSON.parse(get('tkk-cn') || 'null'); if (c2) setRemote(c2.sections); } catch (e) {}
   go(0, 'next');
+  loadJson('api/audio-list', function (d) {
+    if (d.items) { AUD = d.items; put('tkk-aud', JSON.stringify(AUD)); syncListen(); }
+  });
+  loadJson('api/stories', function (d) {
+    if (!goodStories(d.stories)) return;
+    var next = byPart(d.stories);
+    if (JSON.stringify(next) === JSON.stringify(S)) return;
+    put('tkk-stories', JSON.stringify(next));
+    /* đang đọc dở thì để bản mới cho lần mở sau, kẻo trang đang đọc bị lệch */
+    if (view === 'book' && i <= 1 && !play.playing) {
+      S.length = 0; next.forEach(function (x) { S.push(x); });
+      LAST = FIRST + S.length; TOTAL = LAST + 1;
+      go(i, 'next');
+    }
+  });
+  loadJson('api/chiem-nghiem', function (d) {
+    if (!Array.isArray(d.sections)) return;
+    put('tkk-cn', JSON.stringify(d)); setRemote(d.sections);
+    if (view === 'refl' && stage.querySelector('.refl-list')) showReflList(null, null, true);
+  });
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     var hadCtrl = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener('controllerchange', function () {
