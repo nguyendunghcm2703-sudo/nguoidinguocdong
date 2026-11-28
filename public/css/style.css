@@ -508,18 +508,18 @@ html:not([data-mus="1"]) .rain, html:not([data-mus="1"]) .coverrain { display: n
 .birds, .gdash { stroke: var(--ink); }
 .m0 { stop-color: var(--mist); stop-opacity: 0; }
 .m1 { stop-color: var(--mist); stop-opacity: .95; }
-.cbob { animation: cbob 1.5s ease-in-out infinite; }
+.cbob { animation: cbob 2.2s ease-in-out infinite; }
 .cleg { transform-box: fill-box; transform-origin: 50% 0%; }
-.cl1 { animation: cswA 1.5s ease-in-out infinite alternate; }
-.cl2 { animation: cswB 1.5s ease-in-out infinite alternate; }
-.carm { transform-box: fill-box; transform-origin: 50% 0%; animation: cswB 1.5s ease-in-out infinite alternate; }
-.carm.c2 { animation: cswA 1.5s ease-in-out infinite alternate; }
-.clantern { transform-box: fill-box; transform-origin: 50% 0%; animation: clswing 1.5s ease-in-out infinite alternate; }
+.cl1 { animation: cswA 2.2s ease-in-out infinite alternate; }
+.cl2 { animation: cswB 2.2s ease-in-out infinite alternate; }
+.carm { transform-box: fill-box; transform-origin: 50% 0%; animation: cswB 2.2s ease-in-out infinite alternate; }
+.carm.c2 { animation: cswA 2.2s ease-in-out infinite alternate; }
+.clantern { transform-box: fill-box; transform-origin: 50% 0%; animation: clswing 2.2s ease-in-out infinite alternate; }
 .clamp { animation: glow 4s ease-in-out infinite; }
-@keyframes cbob { 0%, 50%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-1.6px); } }
-@keyframes cswA { from { transform: rotate(-12deg); } to { transform: rotate(13deg); } }
-@keyframes cswB { from { transform: rotate(12deg); } to { transform: rotate(-13deg); } }
-@keyframes clswing { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+@keyframes cbob { 0%, 50%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-.7px); } }
+@keyframes cswA { from { transform: rotate(-4deg); } to { transform: rotate(4.5deg); } }
+@keyframes cswB { from { transform: rotate(4deg); } to { transform: rotate(-4.5deg); } }
+@keyframes clswing { from { transform: rotate(-2deg); } to { transform: rotate(2deg); } }
 
 .nib svg { width: 100%; height: 100%; display: block; }
 
