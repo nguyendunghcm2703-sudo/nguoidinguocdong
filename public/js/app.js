@@ -501,6 +501,7 @@
     var html = '<article class="page refl">' +
       '<p class="kick">Chiêm nghiệm</p>' +
       '<h1 class="h-story">Những điều chiêm nghiệm về cuộc đời</h1>' +
+      '<p class="lead">Khi ta nhận ra những điều mình từng ngộ nhận</p>' +
       '<div class="pills" role="tablist" aria-label="Loại chiêm nghiệm">' +
       '<button class="pill" role="tab" data-act="reflTab" data-tab="common" aria-selected="' + (reflTab === 'common') + '">Chung</button>' +
       '<button class="pill" role="tab" data-act="reflTab" data-tab="own" aria-selected="' + (reflTab === 'own') + '">Của bạn</button></div>' +
