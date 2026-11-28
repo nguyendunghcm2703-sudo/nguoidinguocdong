@@ -369,7 +369,9 @@
       '<div class="btns"><button class="chip" data-act="goto" data-n="' + (dayPick() + FIRST) + '">Đọc truyện “' + d.title + '”</button></div></section>' +
       '<div class="dual">' +
       '<button class="dcard" data-act="bookListen"><b>Nghe</b><em data-bl>Nghe cả sách</em><small>Phát liên tục từ truyện đầu đến truyện cuối, tự sang trang</small></button>' +
-      '<button class="dcard" data-act="refl"><b>Chiêm nghiệm</b><em>Những điều chiêm nghiệm về cuộc đời</em><small>' + R.length + ' điều chung, và chỗ để bạn tự viết</small></button>' +
+      '<button class="dcard" data-act="refl"><b>Chiêm nghiệm  <br/> Khi những điều ta từng tin không còn đứng vững trước thực tế.</b>
+      Trải qua một cuộc bể dâu,<br/>
+Những điều trông thấy mà đau đớn lòng.<br/><em>Những điều chiêm nghiệm về cuộc đời</em><small>' + R.length + ' điều chung, và chỗ để bạn tự viết</small></button>' +
       '</div>' +
       '<button class="now" data-act="goto" data-n="' + (ci + FIRST) + '"><span class="now-t">Bây giờ ' + hhmm() + '</span><span class="now-n">Truyện hợp giờ này: “' + S[ci].title + '”</span></button>' +
       parts + penPrefHtml() + '</article>';
