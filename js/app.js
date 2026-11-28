@@ -277,7 +277,10 @@
       '<section class="today"><span class="t-lab">Phương ngôn hôm nay</span><q>' + d.proverb.text + '</q><span class="by">' + by(d.proverb) + '</span>' +
       '<div class="btns"><button class="chip" data-act="goto" data-n="' + (dayPick() + FIRST) + '">Đọc truyện “' + d.title + '”</button></div></section>' +
       '<div class="dual">' +
-      '<button class="dcard" data-act="refl"><b>Chiêm nghiệm</b><em>Những điều chiêm nghiệm về cuộc đời</em><small>' + R.length + ' điều, đọc chậm từng điều</small></button>' +
+     '<button class="dcard" data-act="refl"><b>Chiêm nghiệm</b>' +
+  '<span class="dq">Khi những điều ta từng tin không còn đứng vững trước thực tế.</span>' +
+  '<span class="dv">Trải qua một cuộc bể dâu,<br>Những điều trông thấy mà đau đớn lòng.</span>' +
+  '<em>Những điều chiêm nghiệm về cuộc đời</em><small>' + R.length + ' điều chung, và chỗ để bạn tự viết</small></button>' +
       '<button class="dcard" data-act="tam"><b>Ghi tâm</b><em>Điều bạn giữ lại và tự viết</em><small>' + (tam.saved.length + tam.own.length) + ' mục</small></button>' +
       '</div>' +
       '<button class="now" data-act="goto" data-n="' + (ci + FIRST) + '"><span class="now-t">Bây giờ ' + hhmm() + '</span><span class="now-n">Truyện hợp giờ này: “' + S[ci].title + '”</span></button>' +
